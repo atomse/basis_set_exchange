@@ -1,0 +1,240 @@
+{
+  "molssi_bse_schema": {
+    "schema_type": "component",
+    "schema_version": "0.1"
+  },
+  "description": "Polarization functions for Sc-Zn",
+  "data_source": "Gaussian 09 E01",
+  "elements": {
+    "21": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.6000000000E+00"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "22": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.6900000000E+00"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "23": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.7800000000E+00"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "24": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.8700000000E+00"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "25": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.9600000000E+00"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "26": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.1050000000E+01"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "27": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.1170000000E+01"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "28": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.1290000000E+01"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "29": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.1440000000E+01"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    },
+    "30": {
+      "references": [
+        "raghavachari1989a"
+      ],
+      "electron_shells": [
+        {
+          "function_type": "gto",
+          "harmonic_type": "spherical",
+          "region": "valence",
+          "angular_momentum": [
+            3
+          ],
+          "exponents": [
+            "0.1620000000E+01"
+          ],
+          "coefficients": [
+            [
+              "0.1000000000E+01"
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}
