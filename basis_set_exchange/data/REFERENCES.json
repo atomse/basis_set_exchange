@@ -1423,6 +1423,18 @@
     "title": "unpublished",
     "note": "As referenced by the original BSE"
   },
+  "hay1977a": {
+    "type": "article",
+    "authors": [
+      "Hay, P. Jeffrey"
+    ],
+    "title": "Gaussian basis sets for molecular calculations. The representation of 3d orbitals in transition‐metal atoms",
+    "journal": "J. Chem. Phys.",
+    "volume": "66",
+    "page": "4377-4384",
+    "year": "1977",
+    "doi": "10.1063/1.433731"
+  },
   "hay1983a": {
     "type": "article",
     "authors": [
