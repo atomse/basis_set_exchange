@@ -2,9 +2,7 @@
 Conversion of basis sets to Gaussian format
 '''
 
-from .. import lut
-from .. import manip
-from .common import write_matrix
+from .. import lut, manip, sort, printing
 
 
 def write_g94(basis):
@@ -13,9 +11,9 @@ def write_g94(basis):
 
     s = ''
 
-    basis = manip.uncontract_general(basis)
-    basis = manip.uncontract_spdf(basis, 1)
-    basis = manip.sort_basis(basis)
+    basis = manip.uncontract_general(basis, True)
+    basis = manip.uncontract_spdf(basis, 1, False)
+    basis = sort.sort_basis(basis, False)
 
     # Elements for which we have electron basis
     electron_elements = [k for k, v in basis['elements'].items() if 'electron_shells' in v]
@@ -42,7 +40,7 @@ def write_g94(basis):
                 s += '{}   {}   1.00\n'.format(amchar, nprim)
 
                 point_places = [8 * i + 15 * (i - 1) for i in range(1, ncol + 1)]
-                s += write_matrix([exponents, *coefficients], point_places, convert_exp=True)
+                s += printing.write_matrix([exponents, *coefficients], point_places, convert_exp=True)
 
             s += '****\n'
 
@@ -59,7 +57,7 @@ def write_g94(basis):
             ecp_list.insert(0, ecp_list.pop())
 
             s += '{}     0\n'.format(sym)
-            s += '{}-ECP     {}     {}\n'.format(sym, max_ecp_am, data['element_ecp_electrons'])
+            s += '{}-ECP     {}     {}\n'.format(sym, max_ecp_am, data['ecp_electrons'])
 
             for pot in ecp_list:
                 rexponents = pot['r_exponents']
@@ -78,6 +76,6 @@ def write_g94(basis):
                 s += '  ' + str(nprim) + '\n'
 
                 point_places = [0, 9, 32]
-                s += write_matrix([rexponents, gexponents, *coefficients], point_places, convert_exp=True)
+                s += printing.write_matrix([rexponents, gexponents, *coefficients], point_places, convert_exp=True)
 
     return s

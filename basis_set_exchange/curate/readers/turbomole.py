@@ -51,7 +51,7 @@ def read_turbomole(basis_lines, fname):
                 i += 1
 
                 ecp_shell = {
-                    'ecp_type': 'scalar',
+                    'ecp_type': 'scalar_ecp',
                     'angular_momentum': [shell_am],
                 }
                 ecp_exponents = []
@@ -70,7 +70,7 @@ def read_turbomole(basis_lines, fname):
                 ecp_shell['coefficients'] = [ecp_coefficients]
                 element_data['ecp_potentials'].append(ecp_shell)
 
-            element_data['element_ecp_electrons'] = n_elec
+            element_data['ecp_electrons'] = n_elec
 
         else:
             if not 'electron_shells' in element_data:
@@ -82,9 +82,13 @@ def read_turbomole(basis_lines, fname):
                 shell_am = lut.amchar_to_int(lsplt[1])
                 nprim = int(lsplt[0])
 
+                if max(shell_am) <= 1:
+                    func_type = 'gto'
+                else:
+                    func_type = 'gto_spherical'
+
                 shell = {
-                    'function_type': 'gto',
-                    'harmonic_type': 'spherical',
+                    'function_type': func_type,
                     'region': '',
                     'angular_momentum': shell_am
                 }

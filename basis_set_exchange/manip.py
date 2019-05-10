@@ -7,64 +7,27 @@ data, as well as some other small functions.
 
 import copy
 
-from . import lut
 
-
-def contraction_string(element):
-    """
-    Forms a string specifying the contractions for an element
-
-    ie, (16s,10p) -> [4s,3p]
-    """
-
-    # Does not have electron shells (ECP only?)
-    if 'electron_shells' not in element:
-        return ""
-
-    cont_map = dict()
-    for sh in element['electron_shells']:
-        nprim = len(sh['exponents'])
-        ngeneral = len(sh['coefficients'])
-
-        # is a combined general contraction (sp, spd, etc)
-        is_spdf = len(sh['angular_momentum']) > 1
-
-        for am in sh['angular_momentum']:
-            # If this a general contraction (and not combined am), then use that
-            ncont = ngeneral if not is_spdf else 1
-
-            if am not in cont_map:
-                cont_map[am] = (nprim, ncont)
-            else:
-                cont_map[am] = (cont_map[am][0] + nprim, cont_map[am][1] + ncont)
-
-    primstr = ""
-    contstr = ""
-    for am in sorted(cont_map.keys()):
-        nprim, ncont = cont_map[am]
-
-        if am != 0:
-            primstr += ','
-            contstr += ','
-        primstr += str(nprim) + lut.amint_to_char([am])
-        contstr += str(ncont) + lut.amint_to_char([am])
-
-    return "({}) -> [{}]".format(primstr, contstr)
-
-
-def merge_element_data(dest, sources):
+def merge_element_data(dest, sources, use_copy=True):
     """
     Merges the basis set data for an element from multiple sources
     into dest.
 
     The destination is not modified, and a (shallow) copy of dest is returned
     with the data from sources added.
+
+    If use_copy is True, then the data merged into dest will be a (deep)
+    copy of that found in sources. Otherwise, data may be shared between dest
+    and sources
     """
 
     if dest is not None:
         ret = dest.copy()
     else:
         ret = {}
+
+    if use_copy:
+        sources = copy.deepcopy(sources)
 
     # Note that we are not copying notes/data_sources
     for s in sources:
@@ -76,7 +39,7 @@ def merge_element_data(dest, sources):
             if 'ecp_potentials' in ret:
                 raise RuntimeError('Cannot overwrite existing ECP')
             ret['ecp_potentials'] = s['ecp_potentials']
-            ret['element_ecp_electrons'] = s['element_ecp_electrons']
+            ret['ecp_electrons'] = s['ecp_electrons']
         if 'references' in s:
             if 'references' not in ret:
                 ret['references'] = []
@@ -84,66 +47,112 @@ def merge_element_data(dest, sources):
                 if not ref in ret['references']:
                     ret['references'].append(ref)
 
-    # Sort the shells by angular momentum
-    # Note that I don't sort ECP - ECP can't be composed, and
-    # it should be sorted in the only source with ECP
-    if 'electron_shells' in ret:
-        ret['electron_shells'].sort(key=lambda x: x['angular_momentum'])
-
     return ret
 
 
-def prune_basis(basis):
+def prune_shell(shell, use_copy=True):
+    """
+    Removes exact duplicates of primitives, and condenses duplicate exponents
+    into general contractions
+
+    Also removes primitives if all coefficients are zero
+    """
+
+    new_exponents = []
+    new_coefficients = []
+
+    exponents = shell['exponents']
+    nprim = len(exponents)
+
+    # transpose of the coefficient matrix
+    coeff_t = list(map(list, zip(*shell['coefficients'])))
+
+    # Group by exponents
+    ex_groups = []
+    for i in range(nprim):
+        for ex in ex_groups:
+            if float(exponents[i]) == float(ex[0]):
+                ex[1].append(coeff_t[i])
+                break
+        else:
+            ex_groups.append((exponents[i], [coeff_t[i]]))
+
+    # Now collapse within groups
+    for ex in ex_groups:
+        if len(ex[1]) == 1:
+            # only add if there is a nonzero contraction coefficient
+            if not all([float(x) == 0.0 for x in ex[1][0]]):
+                new_exponents.append(ex[0])
+                new_coefficients.append(ex[1][0])
+            continue
+
+        # ex[1] contains rows of coefficients. The length of ex[1]
+        # is the number of times the exponent is duplicated. Columns represent general contractions.
+        # We want to find the non-zero coefficient in each column, if it exists
+        # The result is a single row with a length representing the number
+        # of general contractions
+
+        new_coeff_row = []
+
+        # so take yet another transpose.
+        ex_coeff = list(map(list, zip(*ex[1])))
+        for g in ex_coeff:
+            nonzero = [x for x in g if float(x) != 0.0]
+            if len(nonzero) > 1:
+                raise RuntimeError("Exponent {} is duplicated within a contraction".format(ex[0]))
+
+            if len(nonzero) == 0:
+                new_coeff_row.append(g[0])
+            else:
+                new_coeff_row.append(nonzero[0])
+
+        # only add if there is a nonzero contraction coefficient anywhere for this exponent
+        if not all([float(x) == 0.0 for x in new_coeff_row]):
+            new_exponents.append(ex[0])
+            new_coefficients.append(new_coeff_row)
+
+    # take the transpose again, putting the general contraction
+    # as the slowest index
+    new_coefficients = list(map(list, zip(*new_coefficients)))
+
+    shell['exponents'] = new_exponents
+    shell['coefficients'] = new_coefficients
+
+    return shell
+
+
+def prune_basis(basis, use_copy=True):
     """
     Removes primitives that have a zero coefficient, and
-    removes duplicate shells
+    removes duplicate primitives and shells
 
     This only finds EXACT duplicates, and is meant to be used
-    after uncontracting
+    after other manipulations
 
-    The input basis set is not modified.
+    If use_copy is True, the input basis set is not modified.
     """
 
-    new_basis = copy.deepcopy(basis)
+    if use_copy:
+        basis = copy.deepcopy(basis)
 
-    for k, el in new_basis['elements'].items():
+    for k, el in basis['elements'].items():
         if not 'electron_shells' in el:
             continue
 
-        for sh in el['electron_shells']:
-            new_exponents = []
-            new_coefficients = []
-
-            exponents = sh['exponents']
-
-            # transpose of the coefficient matrix
-            coeff_t = list(map(list, zip(*sh['coefficients'])))
-
-            # only add if there is a nonzero contraction coefficient
-            for i in range(len(sh['exponents'])):
-                if not all([float(x) == 0.0 for x in coeff_t[i]]):
-                    new_exponents.append(exponents[i])
-                    new_coefficients.append(coeff_t[i])
-
-            # take the transpose again, putting the general contraction
-            # as the slowest index
-            new_coefficients = list(map(list, zip(*new_coefficients)))
-
-            sh['exponents'] = new_exponents
-            sh['coefficients'] = new_coefficients
+        shells = el.pop('electron_shells')
+        shells = [prune_shell(sh, False) for sh in shells]
 
         # Remove any duplicates
-        shells = el.pop('electron_shells')
         el['electron_shells'] = []
 
         for sh in shells:
             if sh not in el['electron_shells']:
                 el['electron_shells'].append(sh)
 
-    return new_basis
+    return basis
 
 
-def uncontract_spdf(basis, max_am=0):
+def uncontract_spdf(basis, max_am=0, use_copy=True):
     """
     Removes sp, spd, spdf, etc, contractions from a basis set
 
@@ -155,11 +164,14 @@ def uncontract_spdf(basis, max_am=0):
     The input basis set is not modified. The returned basis
     may have functions with coefficients of zero and may have duplicate
     shells.
+
+    If use_copy is True, the input basis set is not modified.
     """
 
-    new_basis = copy.deepcopy(basis)
+    if use_copy:
+        basis = copy.deepcopy(basis)
 
-    for k, el in new_basis['elements'].items():
+    for k, el in basis['elements'].items():
 
         if not 'electron_shells' in el:
             continue
@@ -195,21 +207,24 @@ def uncontract_spdf(basis, max_am=0):
 
         el['electron_shells'] = newshells
 
-    return new_basis
+    return basis
 
 
-def uncontract_general(basis):
+def uncontract_general(basis, use_copy=True):
     """
     Removes the general contractions from a basis set
 
     The input basis set is not modified. The returned basis
     may have functions with coefficients of zero and may have duplicate
     shells.
+
+    If use_copy is True, the input basis set is not modified.
     """
 
-    new_basis = copy.deepcopy(basis)
+    if use_copy:
+        basis = copy.deepcopy(basis)
 
-    for k, el in new_basis['elements'].items():
+    for k, el in basis['elements'].items():
 
         if not 'electron_shells' in el:
             continue
@@ -217,23 +232,26 @@ def uncontract_general(basis):
         newshells = []
 
         for sh in el['electron_shells']:
-            # Don't uncontract sp, spd,.... orbitals
-            # leave that to uncontract_spdf
-            if len(sh['angular_momentum']) == 1:
-                for c in sh['coefficients']:
-                    # copy, them replace 'coefficients'
-                    newsh = sh.copy()
-                    newsh['coefficients'] = [c]
-                    newshells.append(newsh)
-            else:
+            # See if we actually have to uncontract
+            # Also, don't uncontract sp, spd,.... orbitals
+            #      (leave that to uncontract_spdf)
+            if len(sh['coefficients']) == 1 or len(sh['angular_momentum']) > 1:
                 newshells.append(sh)
+            else:
+                if len(sh['angular_momentum']) == 1:
+                    for c in sh['coefficients']:
+                        # copy, them replace 'coefficients'
+                        newsh = sh.copy()
+                        newsh['coefficients'] = [c]
+                        newshells.append(newsh)
 
         el['electron_shells'] = newshells
 
-    return prune_basis(new_basis)
+    # If use_basis is True, we already made our deep copy
+    return prune_basis(basis, False)
 
 
-def uncontract_segmented(basis):
+def uncontract_segmented(basis, use_copy=True):
     """
     Removes the segmented contractions from a basis set
 
@@ -243,11 +261,14 @@ def uncontract_segmented(basis):
     The input basis set is not modified. The returned basis
     may have functions with coefficients of zero and may have duplicate
     shells.
+
+    If use_copy is True, the input basis set is not modified.
     """
 
-    new_basis = copy.deepcopy(basis)
+    if use_copy:
+        basis = copy.deepcopy(basis)
 
-    for k, el in new_basis['elements'].items():
+    for k, el in basis['elements'].items():
 
         if not 'electron_shells' in el:
             continue
@@ -270,21 +291,24 @@ def uncontract_segmented(basis):
 
         el['electron_shells'] = newshells
 
-    return new_basis
+    return basis
 
 
-def make_general(basis):
+def make_general(basis, use_copy=True):
     """
     Makes one large general contraction for each angular momentum
 
-    If split_spdf is True, sp... orbitals will be split apary
+    If use_copy is True, the input basis set is not modified.
+
+    The output of this function is not pretty. If you want to make it nicer,
+    use sort_basis afterwards.
     """
 
     zero = '0.00000000'
 
-    new_basis = uncontract_spdf(basis)
+    basis = uncontract_spdf(basis, 0, use_copy)
 
-    for k, el in new_basis['elements'].items():
+    for k, el in basis['elements'].items():
         if not 'electron_shells' in el:
             continue
 
@@ -298,13 +322,12 @@ def make_general(basis):
 
         newshells = []
         for am in all_am:
-            # TODO - Check all shells to make sure region and harmonic type are consistent
             newsh = {
                 'angular_momentum': am,
                 'exponents': [],
                 'coefficients': [],
-                'region': 'combined',
-                'harmonic_type': 'spherical'
+                'region': '',
+                'function_type': None,
             }
 
             # Do exponents first
@@ -321,6 +344,18 @@ def make_general(basis):
                 if sh['angular_momentum'] != am:
                     continue
 
+                if newsh['function_type'] is None:
+                    newsh['function_type'] = sh['function_type']
+
+                # Make sure the shells we are merging have the same function types
+                ft1 = newsh['function_type']
+                ft2 = sh['function_type']
+
+                # Check if one function type is the subset of another
+                # (should handle gto/gto_spherical, etc)
+                if ft1 not in ft2 and ft2 not in ft1:
+                    raise RuntimeError("Cannot make general contraction of different function types")
+
                 ngen = len(sh['coefficients'])
 
                 for g in range(ngen):
@@ -335,7 +370,7 @@ def make_general(basis):
 
         el['electron_shells'] = newshells
 
-    return new_basis
+    return basis
 
 
 def _is_single_column(col):
@@ -400,7 +435,7 @@ def _find_block(mat):
     return (rows, cols)
 
 
-def optimize_general(basis):
+def optimize_general(basis, use_copy=True):
     """
     Optimizes the general contraction using the method of Hashimoto et al
 
@@ -411,8 +446,10 @@ def optimize_general(basis):
 
     """
 
-    new_basis = copy.deepcopy(basis)
-    for k, el in new_basis['elements'].items():
+    if use_copy:
+        basis = copy.deepcopy(basis)
+
+    for k, el in basis['elements'].items():
 
         if not 'electron_shells' in el:
             continue
@@ -483,78 +520,4 @@ def optimize_general(basis):
             if len(sh['coefficients']) == 1 and len(sh['coefficients'][0]) == 1:
                 sh['coefficients'][0][0] = '1.0000000'
 
-    return new_basis
-
-
-def sort_shells(shells):
-    """
-    Sort a list of basis set shells into a standard order
-
-    The order within a shell is by decreasing value of the exponent.
-
-    The order of the shell list is in increasing angular momentum, and then
-    by decreasing number of primitives, then decreasing value of the largest exponent.
-
-    The original data is not modified.
-    """
-
-    new_shells = copy.deepcopy(shells)
-
-    for sh in new_shells:
-        # Sort primitives within a shell
-        # Transpose of coefficients
-        tmp_c = list(map(list, zip(*sh['coefficients'])))
-
-        # Zip together exponents and coeffs for sorting
-        tmp = zip(sh['exponents'], tmp_c)
-
-        # Sort by decreasing value of exponent
-        tmp = sorted(tmp, key=lambda x: -float(x[0]))
-
-        # Unpack, and re-transpose the coefficients
-        tmp_c = [x[1] for x in tmp]
-        sh['exponents'] = [x[0] for x in tmp]
-        sh['coefficients'] = list(map(list, zip(*tmp_c)))
-
-    # Sort by increasing AM, then general contraction level, then decreasing highest exponent
-    return list(
-        sorted(
-            new_shells,
-            key=lambda x: (max(x['angular_momentum']), -len(x['exponents']), -len(x['coefficients']), -float(x[
-                'exponents'][0]))))
-
-
-def sort_potentials(potentials):
-    """
-    Sort a list of ECP potentials into a standard order
-
-    The order within a potential is not modified.
-
-    The order of the shell list is in increasing angular momentum, with the largest
-    angular momentum being moved to the front.
-
-    The original data is not modified, and a deep copy is returned.
-    """
-
-    new_potentials = copy.deepcopy(potentials)
-
-    # Sort by increasing AM, then move the last element to the front
-    new_potentials = list(sorted(new_potentials, key=lambda x: x['angular_momentum']))
-    new_potentials.insert(0, new_potentials.pop())
-    return new_potentials
-
-
-def sort_basis(basis):
-    """
-    Sorts all the information in a basis set into a standard order
-
-    The original data is not modified.
-    """
-
-    new_basis = copy.deepcopy(basis)
-
-    for k, el in new_basis['elements'].items():
-        if 'electron_shells' in el:
-            el['electron_shells'] = sort_shells(el['electron_shells'])
-
-    return new_basis
+    return basis

@@ -2,7 +2,6 @@
 Converts basis set data to a specified output format
 '''
 
-from .. import sort
 from .bsejson import write_json
 from .nwchem import write_nwchem
 from .g94 import write_g94
@@ -10,6 +9,8 @@ from .gamess_us import write_gamess_us
 from .psi4 import write_psi4
 from .turbomole import write_turbomole
 from .molpro import write_molpro
+from .cfour import write_cfour
+from .bsedebug import write_bsedebug
 
 _converter_map = {
     'nwchem': {
@@ -54,6 +55,20 @@ _converter_map = {
         'valid': set(['cartesian_gto', 'spherical_gto', 'scalar_ecp']),
         'function': write_molpro
     },
+    'cfour': {
+        'display': 'CFOUR',
+        'extension': '.c4bas',
+        'comment': '!',
+        'valid': set(['cartesian_gto', 'spherical_gto', 'scalar_ecp']),
+        'function': write_cfour
+    },
+    'bsedebug': {
+        'display': 'BSE Debug',
+        'extension': '.bse',
+        'comment': '!',
+        'valid': None,
+        'function': write_bsedebug
+    },
     'json': {
         'display': 'JSON',
         'extension': '.json',
@@ -70,9 +85,6 @@ def convert_basis(basis_dict, fmt, header=None):
     the data in the specified output format
     '''
 
-    # Sort the basis dictionary
-    basis_dict_sorted = sort.sort_basis_dict(basis_dict)
-
     # make converters case insensitive
     fmt = fmt.lower()
     if fmt not in _converter_map:
@@ -87,7 +99,7 @@ def convert_basis(basis_dict, fmt, header=None):
             raise RuntimeError('Converter {} does not support all function types: {}'.format(fmt, str(ftypes)))
 
     # Actually do the conversion
-    ret_str = converter['function'](basis_dict_sorted)
+    ret_str = converter['function'](basis_dict)
 
     if header is not None and fmt != 'json':
         comment_str = _converter_map[fmt]['comment']

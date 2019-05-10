@@ -1,3 +1,53 @@
+v0.7.0
+--------------------
+  * Fixes bug in make_general when shell contains duplicate exponents (#59)
+  * Remove harmonic_type in favor of function_type
+  * Remove cartesian/spherical from s and p orbitals
+  * Fixes issue with sorting of basis sets
+  * Adds data from old BSE:
+    * Basic cc-pwCVXZ
+    * Basic (aug)-cc-pCVXZ
+    * Basic dunning DK
+    * CCJ basis sets
+    * EMD basis sets of Lehtola
+    * Rest of Jensen basis sets
+    * ahlrichs variations: dhf and x2c
+    * (aug)-cc-pCVXZ-DK
+    * cc-pwCVXZ-DK3
+  * Adds updated v1 data:
+    * Jorge basis sets
+
+
+v0.6.9
+--------------------
+  * Fix metadata error with modified LANL2DZ
+
+
+v0.6.8
+--------------------
+  * Fixes windows compatibility
+    * Fixes filenames with asterisks
+    * Consistent use of utf-8 encoding
+  * Adds modified LANL2DZ of Couty-Hall
+
+
+v0.6.7
+--------------------
+  * Performance improvements
+  * Remove erroneous printing
+  * Fix bug in bsedebug converter
+
+
+v0.6.6
+--------------------
+  * Adds MIDIX/MIDI! from Truhlar et al
+    * BSE version, and v1 with Li from thompson2001a
+  * Adds ANO-VT and FANO basis sets of Claudino and Bartlett
+  * Added citations for the BSE project
+  * Added cfour and bsedebug outputs
+  * Sorting and unintuitive output from make_general is fixed
+
+
 v0.6.5
 --------------------
   * Major internal data reorganization

@@ -47,7 +47,7 @@ def read_g94(basis_lines, fname):
             lsplt = basis_lines[i].split()
             maxam = int(lsplt[1])
             n_elec = int(lsplt[2])
-            element_data['element_ecp_electrons'] = n_elec
+            element_data['ecp_electrons'] = n_elec
 
             # Highest AM first, then the rest in order
             am_list = list(range(maxam + 1))
@@ -61,7 +61,7 @@ def read_g94(basis_lines, fname):
                 i += 1  # Skip title block
 
                 shell_am = am_list[j]
-                ecp_shell = {'angular_momentum': [shell_am], 'ecp_type': 'scalar'}
+                ecp_shell = {'angular_momentum': [shell_am], 'ecp_type': 'scalar_ecp'}
                 rexponents = []
                 gexponents = []
                 coefficients = []
@@ -88,13 +88,17 @@ def read_g94(basis_lines, fname):
 
             while basis_lines[i] != '****':
                 lsplt = basis_lines[i].split()
-                shell_am = lut.amchar_to_int(lsplt[0])
+                shell_am = lut.amchar_to_int(lsplt[0], hij=True)
                 nprim = int(lsplt[1])
 
+                if max(shell_am) <= 1:
+                    func_type = 'gto'
+                else:
+                    func_type = 'gto_spherical'
+
                 shell = {
-                    'function_type': 'gto',
-                    'harmonic_type': 'spherical',
-                    'region': 'valence',
+                    'function_type': func_type,
+                    'region': '',
                     'angular_momentum': shell_am
                 }
 

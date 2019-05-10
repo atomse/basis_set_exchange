@@ -26,12 +26,6 @@ def _extract_all(filepath, extract_dir):
         raise RuntimeError("Unexpected file extension")
 
 
-# yapf: disable
-@pytest.mark.slow
-@pytest.mark.parametrize('ext', _bundle_exts)
-@pytest.mark.parametrize('fmt, reffmt', [('nwchem', 'bib'),
-                                         ('psi4', 'txt')])
-# yapf: enable
 def _run_test_bundles(tmp_path, fmt, reffmt, ext, data_dir):
     '''Test functionality related to creating archive of basis set'''
 
@@ -60,10 +54,13 @@ def _run_test_bundles(tmp_path, fmt, reffmt, ext, data_dir):
 
     for root, dirs, files in os.walk(extract_path):
         for basename in files:
+            if basename == 'README.txt':
+                continue
+
             fpath = os.path.join(root, basename)
             name,ver = basename.split('.')[:2]
-            if name == 'README':
-                continue
+            name = bse.misc.basis_name_from_filename(name)
+
             if basename.endswith('.ref' + ref_ext):
                 compare_data = bse.get_references(name, fmt=reffmt, version=ver, data_dir=data_dir)
                 all_ref.remove((name,ver))
@@ -77,7 +74,7 @@ def _run_test_bundles(tmp_path, fmt, reffmt, ext, data_dir):
             else:
                 raise RuntimeError("Unknown file found: " + fpath)
 
-            with open(fpath, 'r') as ftmp:
+            with open(fpath, 'r', encoding='utf-8') as ftmp:
                 assert compare_data == ftmp.read()
 
     assert len(all_bs) == 0
@@ -91,13 +88,3 @@ def _run_test_bundles(tmp_path, fmt, reffmt, ext, data_dir):
 # yapf: enable
 def test_bundles_fast(tmp_path, fmt, reffmt, ext):
    _run_test_bundles(tmp_path, fmt, reffmt, ext, fake_data_dir)
-
-
-# yapf: disable
-@pytest.mark.slow
-@pytest.mark.parametrize('ext', _bundle_exts)
-@pytest.mark.parametrize('fmt, reffmt', [('nwchem', 'bib'),
-                                         ('psi4', 'txt')])
-# yapf: enable
-def test_bundles_slow(tmp_path, fmt, reffmt, ext):
-   _run_test_bundles(tmp_path, fmt, reffmt, ext, None)

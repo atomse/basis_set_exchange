@@ -2,9 +2,7 @@
 Conversion of basis sets to Gaussian format
 '''
 
-from .. import lut
-from .. import manip
-from .common import write_matrix
+from .. import lut, manip, sort, printing
 
 
 def write_gamess_us(basis):
@@ -14,9 +12,9 @@ def write_gamess_us(basis):
     s = ''
 
     # Uncontract all but SP
-    basis = manip.uncontract_general(basis)
-    basis = manip.uncontract_spdf(basis, 1)
-    basis = manip.sort_basis(basis)
+    basis = manip.uncontract_general(basis, True)
+    basis = manip.uncontract_spdf(basis, 1, False)
+    basis = sort.sort_basis(basis, False)
 
     # Elements for which we have electron basis
     electron_elements = [k for k, v in basis['elements'].items() if 'electron_shells' in v]
@@ -48,7 +46,7 @@ def write_gamess_us(basis):
                 # 1-based indexing
                 idx_column = list(range(1, nprim + 1))
                 point_places = [0] + [4 + 8 * i + 15 * (i - 1) for i in range(1, ncol)]
-                s += write_matrix([idx_column, exponents, *coefficients], point_places)
+                s += printing.write_matrix([idx_column, exponents, *coefficients], point_places)
 
         s += "$END"
 
@@ -66,7 +64,7 @@ def write_gamess_us(basis):
             ecp_list = sorted(data['ecp_potentials'], key=lambda x: x['angular_momentum'])
             ecp_list.insert(0, ecp_list.pop())
 
-            s += '{}-ECP GEN    {}    {}\n'.format(sym, data['element_ecp_electrons'], max_ecp_am)
+            s += '{}-ECP GEN    {}    {}\n'.format(sym, data['ecp_electrons'], max_ecp_am)
 
             for pot in ecp_list:
                 rexponents = pot['r_exponents']
@@ -84,7 +82,7 @@ def write_gamess_us(basis):
                     s += '{:<5} ----- {}-{} potential -----\n'.format(nprim, amchar, max_ecp_amchar)
 
                 point_places = [8, 23, 32]
-                s += write_matrix([*coefficients, rexponents, gexponents], point_places)
+                s += printing.write_matrix([*coefficients, rexponents, gexponents], point_places)
 
         s += "$END\n"
 

@@ -17,12 +17,11 @@ def _whole_basis_types(basis):
     for v in basis['elements'].values():
         if 'electron_shells' in v:
             for sh in v['electron_shells']:
-                tstr = '{}_{}'.format(sh['harmonic_type'], sh['function_type'])
-                all_types.add(tstr)
+                all_types.add(sh['function_type'])
 
         if 'ecp_potentials' in v:
             for pot in v['ecp_potentials']:
-                all_types.add(pot['ecp_type'] + '_ecp')
+                all_types.add(pot['ecp_type'])
 
     return sorted(list(all_types))
 
@@ -61,7 +60,14 @@ def compose_elemental_basis(file_relpath, data_dir):
         components = v.pop('components')
 
         # all of the component data for this element
-        el_comp_data = [component_map[c]['elements'][k] for c in components]
+        el_comp_data = []
+        for c in components:
+            centry = component_map[c]['elements']
+
+            if k not in centry:
+                raise RuntimeError('File {} does not contain element {}'.format(c, k))
+
+            el_comp_data.append(centry[k])
 
         # merge all the data
         v = manip.merge_element_data(None, el_comp_data)
@@ -78,6 +84,9 @@ def compose_table_basis(file_relpath, data_dir):
     This function reads the info from the given file, and reads all the elemental
     basis set information from the files listed therein. It then composes all the
     information together into one 'table' basis dictionary
+
+    Note that the data returned from this function will not be shared, even if
+    the function is called again with the same arguments.
     """
 
     # Do a simple read of the json
@@ -95,6 +104,10 @@ def compose_table_basis(file_relpath, data_dir):
     # from the elemental basis
     for k, entry in table_bs['elements'].items():
         data = element_map[entry]
+
+        if k not in data['elements']:
+            raise KeyError('File {} does not contain element {}'.format(entry, k))
+
         table_bs['elements'][k] = data['elements'][k]
 
     # Add the version to the dictionary

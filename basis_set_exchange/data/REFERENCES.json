@@ -30,17 +30,17 @@
     "year": "1987",
     "doi": "10.1063/1.451917"
   },
-  "ambroise2018a": {
+  "ambroise2019a": {
     "type": "article",
     "authors": [
       "Ambroise, Maximilien A.",
       "Jensen, Frank"
     ],
-    "title": "Probing Basis Set Requirements for Calculating Core Ionization and Core Excitation Spectroscopy by the ΔSCF Approach",
+    "title": "Probing Basis Set Requirements for Calculating Core Ionization and Core Excitation Spectroscopy by the Δ Self-Consistent-Field Approach",
     "journal": "J. Chem. Theory Comput.",
-    "volume": "XXX",
-    "page": "XXXX",
-    "year": "2018",
+    "volume": "15",
+    "page": "325-337",
+    "year": "2019",
     "doi": "10.1021/acs.jctc.8b01071"
   },
   "amerigo1995a": {
@@ -341,7 +341,7 @@
       "Binkley, J. Stephen",
       "Pople, John A."
     ],
-    "title": "Self‐consistent molecular orbital methods. XIX. Split‐valence Gaussian‐type basis sets for beryllium",
+    "title": "Self-consistent molecular orbital methods. XIX. Split-valence Gaussian-type basis sets for beryllium",
     "journal": "J. Chem. Phys.",
     "volume": "66",
     "page": "879-880",
@@ -463,6 +463,22 @@
     "year": "2013",
     "doi": "10.1080/00268976.2012.709282"
   },
+  "campos2017a": {
+    "type": "article",
+    "authors": [
+      "Campos, C. T.", 
+      "de Oliveira, A. Z.",
+      "Ferreira, I. B.",
+      "Jorge, F. E.",
+      "Martins, L. S. C."
+    ],
+    "title": "Segmented all-electron Gaussian basis sets of double and triple zeta qualities for Fr, Ra, and Ac",
+    "journal": "Chem. Phys. Lett.",
+    "volume": "675",
+    "page": "1-5",
+    "year": "2017a",
+    "doi": "10.1016/j.cplett.2017.02.080"
+  },
   "cao2001a": {
     "type": "article",
     "authors": [
@@ -549,6 +565,47 @@
     "page": "294-301",
     "year": "1983",
     "doi": "10.1002/jcc.540040303"
+  },
+  "claudino2016a": {
+    "type": "article",
+    "authors": [
+      "Claudino, Daniel",
+      "Gargano, Ricardo", 
+      "Bartlett, Rodney J."
+    ],
+    "title": "Coupled-cluster based basis sets for valence correlation calculations",
+    "journal": "J. Chem. Phys.",
+    "volume": "144",
+    "page": "104106",
+    "year": "2016",
+    "doi": "10.1063/1.4943275"
+  },
+  "claudino2016b": {
+    "type": "article",
+    "authors": [
+      "Claudino, Daniel",
+      "Gargano, Ricardo", 
+      "Bartlett, Rodney J."
+    ],
+    "title": "Erratum: 'Coupled-cluster based basis sets for valence correlation calculations' [J. Chem. Phys. 144, 104106(2016)]",
+    "journal": "J. Chem. Phys.",
+    "volume": "145",
+    "page": "019901",
+    "year": "2016",
+    "doi": "10.1063/1.4954989"
+  },
+  "claudino2018a": {
+    "type": "article",
+    "authors": [
+      "Claudino, Daniel",
+      "Bartlett, Rodney J."
+    ],
+    "title": "Coupled-cluster based basis sets for valence correlation calculations. New primitives, frozen atomic natural orbitals, and basis sets from double to hextuple zeta for atoms H, He, and B-Ne",
+    "journal": "J. Chem. Phys.",
+    "volume": "149",
+    "page": "064105",
+    "year": "2018",
+    "doi": "10.1063/1.5039741"
   },
   "collins1976a": {
     "type": "article",
@@ -1524,7 +1581,7 @@
       "Hehre, W. J.",
       "Lathan, William A."
     ],
-    "title": "Self‐Consistent Molecular Orbital Methods. XIV. An Extended Gaussian‐Type Basis for Molecular Orbital Studies of Organic Molecules. Inclusion of Second Row Elements",
+    "title": "Self-Consistent Molecular Orbital Methods. XIV. An Extended Gaussian-Type Basis for Molecular Orbital Studies of Organic Molecules. Inclusion of Second Row Elements",
     "journal": "J. Chem. Phys.",
     "volume": "56",
     "page": "5255-5257",
@@ -1537,7 +1594,7 @@
       "Hehre, W. J.",
       "Pople, J. A."
     ],
-    "title": "Self‐Consistent Molecular Orbital Methods. XIII. An Extended Gaussian‐Type Basis for Boron",
+    "title": "Self-Consistent Molecular Orbital Methods. XIII. An Extended Gaussian-Type Basis for Boron",
     "journal": "J. Chem. Phys.",
     "volume": "56",
     "page": "4233-4234",
@@ -1799,7 +1856,7 @@
     "authors": [
       "Jensen, Frank"
     ],
-    "title": "Erratum: “Polarization consistent basis sets: Principles” [J. Chem. Phys. 115, 9113 (2001)]",
+    "title": "Erratum: 'Polarization consistent basis sets: Principles' [J. Chem. Phys. 115, 9113 (2001)]",
     "journal": "J. Chem. Phys.",
     "volume": "116",
     "page": "3502-3502",
@@ -1957,6 +2014,20 @@
     "page": "064108",
     "year": "2009",
     "doi": "10.1063/1.3072360"
+  },
+  "jorge2016a": {
+    "type": "article",
+    "authors": [
+      "Jorge, F. E.",
+      "Martins, L. S. C.",
+      "Franco, M. L."
+    ],
+    "title": "All-electron double zeta basis sets for the lanthanides: Application in atomic and molecular property calculations",
+    "journal": "Chem. Phys. Lett.",
+    "volume": "643",
+    "page": "84-88",
+    "year": "2016",
+    "doi": "10.1016/j.cplett.2015.11.013"
   },
   "kaupp1991a": {
     "type": "article",
@@ -2171,6 +2242,20 @@
     "year": "1996",
     "doi": "10.1016/0009-2614(96)00382-x"
   },
+  "li1998a": {
+    "type": "article",
+    "authors": [
+      "Li, Jiabo",
+      "Cramer, Christopher J.",
+      "Truhlar, Donald G."
+    ],
+    "title": "MIDI! basis set for silicon, bromine, and iodine",
+    "journal": "Theor. Chem. Acc.",
+    "volume": "99",
+    "page": "192--196",
+    "year": "1998",
+    "doi": "10.1007/s002140050323"
+  },
   "lim2005a": {
     "type": "article",
     "authors": [
@@ -2285,6 +2370,35 @@
     "page": "62-69",
     "year": "2013",
     "doi": "10.1016/j.comptc.2013.03.004"
+  },
+  "martins2015a": {
+    "type": "article",
+    "authors": [
+      "Martins, L. S. C.",
+      "Jorge, F. E.",
+      "Machado, S. F."
+    ],
+    "title": "All-electron segmented contraction basis sets of triple zeta valence quality for the fifth-row elements",
+    "journal": "Mol. Phys.",
+    "volume": "113",
+    "page": "3578-3586",
+    "year": "2015",
+    "doi": "10.1080/00268976.2015.1040095"
+  },
+  "martins2016a": {
+    "type": "article",
+    "authors": [
+      "Martins, L. S. C.",
+      "Jorge, F. E.",
+      "Franco, M. L.",
+      "Ferreira, I. B."
+    ],
+    "title": "All-electron Gaussian basis sets of double zeta quality for the actinides",
+    "journal": "J. Chem. Phys.",
+    "volume": "145",
+    "page": "244113",
+    "year": "2016",
+    "doi": "10.1063/1.4973377"
   },
   "mclean1980a": {
     "type": "article",
@@ -2524,6 +2638,38 @@
     "page": "43-46",
     "year": "2010",
     "doi": "10.1016/j.theochem.2010.02.017"
+  },
+  "oliveira2018a": {
+    "type": "article",
+    "authors": [
+      "de Oliveira, A. Z.",
+      "Campos, C. T.",
+      "Jorge, F. E.",
+      "Ferreira, I. B.",
+      "Fantin, P. A."
+    ],
+    "title": "All-electron triple zeta basis sets for the actinides",
+    "journal": "Comput. Theor. Chem.",
+    "volume": "1135",
+    "page": "28-33",
+    "year": "2018",
+    "doi": "j.comptc.2018.05.010"
+  },
+  "oliveira2019a": {
+    "type": "article",
+    "authors": [
+      "de Oliveira, A. Z.",
+      "Ferreira, I. B.",
+      "Campos, C. T.",
+      "Jorge, F. E.",
+      "Fantin, P. A."
+    ],
+    "title": "Segmented all-electron basis sets of triple zeta quality for the lanthanides: application to structure calculations of lanthanide monoxides",
+    "journal": "J. Mol. Model.",
+    "volume": "25",
+    "page": "38",
+    "year": "2019",
+    "doi": "10.1007/s00894-019-3924-8"
   },
   "ortiz1992a": {
     "type": "article",
@@ -2946,6 +3092,16 @@
     "year": "2011",
     "doi": "10.1007/s00214-010-0764-0"
   },
+  "pritchardXXXXa": {
+    "type": "unpublished",
+    "authors": [
+        "Pritchard, Benjamin P.",
+        "Altarawy, Doaa",
+        "Windus, Theresa L."
+    ],
+    "title": "A New Basis Set Exchange: An Open, Up-to-date Resource for the Molecular Sciences Community",
+    "note": "Manuscript in preparation"
+  },
   "provasi2001a": {
     "type": "article",
     "authors": [
@@ -3174,7 +3330,7 @@
       "Gayen, Sanjukta",
       "Ermler, W. C."
     ],
-    "title": "Ab initio relativistic effective potentials with spin–orbit operators. V. Ce through Lu",
+    "title": "Ab initio relativistic effective potentials with spin-orbit operators. V. Ce through Lu",
     "journal": "J. Chem. Phys.",
     "volume": "100",
     "page": "8145-",
@@ -3352,7 +3508,7 @@
       "Li, Jun",
       "Windus, Theresa L."
     ],
-    "title": "Basis Set Exchange:  A Community Database for Computational Sciences",
+    "title": "Basis Set Exchange: A Community Database for Computational Sciences",
     "journal": "J. Chem. Inf. Model.",
     "volume": "47",
     "page": "1045-1052",
@@ -3431,6 +3587,20 @@
     "page": "7191-7197",
     "year": "2010",
     "doi": "10.1021/jp102712z"
+  },
+  "thompson2001a": {
+    "type": "article",
+    "authors": [
+      "Thompson, Jason D.",
+      "Winget, Paul",
+      "Truhlar, Donald G."
+    ],
+    "title": "MIDIX basis set for the lithium atom: Accurate geometries and atomic partial charges for lithium compounds with minimal computational cost",
+    "journal": "PhysChemComm",
+    "volume": "4",
+    "page": "72-77",
+    "year": "2001",
+    "doi": "10.1039/B105076C"
   },
   "vidal2012a": {
     "type": "article",
@@ -3530,7 +3700,7 @@
       "Furche, Filipp",
       "Ahlrichs, Reinhart"
     ],
-    "title": "Gaussian basis sets of quadruple zeta valence quality for atoms H–Kr",
+    "title": "Gaussian basis sets of quadruple zeta valence quality for atoms H-Kr",
     "journal": "J. Chem. Phys.",
     "volume": "119",
     "page": "12753-12762",
@@ -3730,5 +3900,19 @@
     "page": "303-307",
     "year": "2009",
     "doi": "10.1016/j.cplett.2009.06.003"
+  },
+  "zheng2011a": {
+    "type": "article",
+    "authors": [
+      "Zheng, Jingjing",
+      "Xu, Xuefei",
+      "Truhlar, Donald G."
+    ],
+    "title": "Minimally augmented Karlsruhe basis sets",
+    "journal": "Theor. Chem. Acc.",
+    "volume": "128",
+    "page": "295-305",
+    "year": "2011",
+    "doi": "10.1007/s00214-010-0846-z"
   }
 }

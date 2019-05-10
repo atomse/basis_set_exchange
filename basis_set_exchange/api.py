@@ -34,6 +34,8 @@ _default_schema_dir = os.path.join(_my_dir, 'schema')
 # Main URL of the project
 _main_url = 'https://www.basissetexchange.org'
 
+# Reference for the BSE
+
 
 def _get_basis_metadata(name, data_dir):
     '''Get metadata for a single basis set
@@ -202,30 +204,34 @@ def get_basis(name,
             # Set to only the elements we want
             basis_dict['elements'] = {k: v for k, v in bs_elements.items() if k in elements}
 
+    # Note that from now on, the pipleline is going to modify basis_dict. That is ok,
+    # since we are returned a unique instance from compose_table_basis
+
     needs_pruning = False
     if optimize_general:
-        basis_dict = manip.optimize_general(basis_dict)
+        basis_dict = manip.optimize_general(basis_dict, False)
         needs_pruning = True
 
     # uncontract_segmented implies uncontract_general
     if uncontract_segmented:
-        basis_dict = manip.uncontract_segmented(basis_dict)
+        basis_dict = manip.uncontract_segmented(basis_dict, False)
         needs_pruning = True
+
     elif uncontract_general:
-        basis_dict = manip.uncontract_general(basis_dict)
+        basis_dict = manip.uncontract_general(basis_dict, False)
         needs_pruning = True
 
     if uncontract_spdf:
-        basis_dict = manip.uncontract_spdf(basis_dict)
+        basis_dict = manip.uncontract_spdf(basis_dict, 0, False)
         needs_pruning = True
 
     if make_general:
-        basis_dict = manip.make_general(basis_dict)
+        basis_dict = manip.make_general(basis_dict, False)
         needs_pruning = True
 
     # Remove dead and duplicate shells
     if needs_pruning:
-        basis_dict = manip.prune_basis(basis_dict)
+        basis_dict = manip.prune_basis(basis_dict, False)
 
     # If fmt is not specified, return as a python dict
     if fmt is None:
@@ -362,7 +368,7 @@ def get_references(basis_name, elements=None, version=None, fmt=None, data_dir=N
         Available reference formats are
 
             * bib
-            * tex
+            * txt
             * json
 
     data_dir : str
@@ -410,7 +416,7 @@ def get_families(data_dir=None):
     return sorted(list(families))
 
 
-def filter_basis_sets(substr=None, family=None, role=None, data_dir=None):
+def filter_basis_sets(substr=None, family=None, role=None, elements=None, data_dir=None):
     '''Filter basis sets by some criteria
 
     All parameters are ANDed together and are not case sensitive.
@@ -423,6 +429,12 @@ def filter_basis_sets(substr=None, family=None, role=None, data_dir=None):
         Family the basis set belongs to
     role : str
         Role of the basis set
+    elements : str or list
+        List of elements that the basis set must include.
+        Elements can be specified by Z-number (int or str) or by symbol (str).
+        If this argument is a str (ie, '1-3,7-10'), it is expanded into a list.
+        Z numbers and symbols (case insensitive) can be used interchangeably
+        (see :func:`bse.misc.expand_elements`)
     data_dir : str
         Data directory with all the basis set information. By default,
         it is in the 'data' subdirectory of this project.
@@ -438,16 +450,26 @@ def filter_basis_sets(substr=None, family=None, role=None, data_dir=None):
 
     # family and role are required to be lowercase (via schema and validation functions)
 
-    if family:
+    if family is not None:
         family = family.lower()
         if not family in get_families(data_dir):
             raise RuntimeError("Family '{}' is not a valid family".format(family))
         metadata = {k: v for k, v in metadata.items() if v['family'] == family}
-    if role:
+    if role is not None:
         role = role.lower()
         if not role in get_roles():
             raise RuntimeError("Role '{}' is not a valid role".format(role))
         metadata = {k: v for k, v in metadata.items() if v['role'] == role}
+    if elements is not None:
+        elements = misc.expand_elements(elements, True)
+        elements = set(elements)
+
+        for basis_name, basis_data in metadata.items():
+            ver_data = basis_data['versions']
+            basis_data['versions'] = {k: v for k, v in ver_data.items() if elements <= set(v['elements'])}
+
+        # There will be basis sets with no versions. So clean that up
+        metadata = {k: v for k, v in metadata.items() if len(v['versions']) > 0}
     if substr:
         substr = substr.lower()
         metadata = {k: v for k, v in metadata.items() if substr in k or substr in v['display_name']}

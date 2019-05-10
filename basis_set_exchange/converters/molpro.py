@@ -2,29 +2,18 @@
 Conversion of basis sets to Molpro format
 '''
 
-from .. import lut
-from .. import manip
-
-
-def _find_range(coeffs):
-    '''
-    Find the range in a list of coefficients where the coefficient is nonzero
-    '''
-
-    coeffs = [float(x) != 0 for x in coeffs]
-    first = coeffs.index(True)
-    coeffs.reverse()
-    last = len(coeffs) - coeffs.index(True) - 1
-    return first, last
+from .. import lut, manip, misc, sort
+from .common import find_range
 
 
 def write_molpro(basis):
     '''Converts a basis set to Molpro format
     '''
 
-    # Uncontract all but SP
-    basis = manip.uncontract_spdf(basis, 0)
-    basis = manip.make_general(basis)
+    # Uncontract all, and make as generally-contracted as possible
+    basis = manip.uncontract_spdf(basis, 0, True)
+    basis = manip.make_general(basis, False)
+    basis = sort.sort_basis(basis, True)
 
     s = ''
 
@@ -43,7 +32,7 @@ def write_molpro(basis):
             data = basis['elements'][z]
             sym = lut.element_sym_from_Z(z).upper()
             s += '!\n'
-            s += '! {:20} {}\n'.format(lut.element_name_from_Z(z), manip.contraction_string(data))
+            s += '! {:20} {}\n'.format(lut.element_name_from_Z(z), misc.contraction_string(data))
 
             for shell in data['electron_shells']:
                 exponents = shell['exponents']
@@ -53,7 +42,7 @@ def write_molpro(basis):
                 amchar = lut.amint_to_char(am).lower()
                 s += '{}, {} , {}\n'.format(amchar, sym, ', '.join(exponents))
                 for c in coefficients:
-                    first, last = _find_range(c)
+                    first, last = find_range(c)
                     s += 'c, {}.{}, {}\n'.format(first + 1, last + 1, ', '.join(c[first:last + 1]))
         s += '}\n'
 
@@ -70,7 +59,7 @@ def write_molpro(basis):
             ecp_list = sorted(data['ecp_potentials'], key=lambda x: x['angular_momentum'])
             ecp_list.insert(0, ecp_list.pop())
 
-            s += 'ECP, {}, {}, {} ;\n'.format(sym, data['element_ecp_electrons'], max_ecp_am)
+            s += 'ECP, {}, {}, {} ;\n'.format(sym, data['ecp_electrons'], max_ecp_am)
 
             for pot in ecp_list:
                 rexponents = pot['r_exponents']

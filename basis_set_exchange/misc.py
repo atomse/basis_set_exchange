@@ -13,6 +13,48 @@ def _Z_from_str(s):
         return lut.element_Z_from_sym(s)
 
 
+def contraction_string(element):
+    """
+    Forms a string specifying the contractions for an element
+
+    ie, (16s,10p) -> [4s,3p]
+    """
+
+    # Does not have electron shells (ECP only?)
+    if 'electron_shells' not in element:
+        return ""
+
+    cont_map = dict()
+    for sh in element['electron_shells']:
+        nprim = len(sh['exponents'])
+        ngeneral = len(sh['coefficients'])
+
+        # is a combined general contraction (sp, spd, etc)
+        is_spdf = len(sh['angular_momentum']) > 1
+
+        for am in sh['angular_momentum']:
+            # If this a general contraction (and not combined am), then use that
+            ncont = ngeneral if not is_spdf else 1
+
+            if am not in cont_map:
+                cont_map[am] = (nprim, ncont)
+            else:
+                cont_map[am] = (cont_map[am][0] + nprim, cont_map[am][1] + ncont)
+
+    primstr = ""
+    contstr = ""
+    for am in sorted(cont_map.keys()):
+        nprim, ncont = cont_map[am]
+
+        if am != 0:
+            primstr += ','
+            contstr += ','
+        primstr += str(nprim) + lut.amint_to_char([am])
+        contstr += str(ncont) + lut.amint_to_char([am])
+
+    return "({}) -> [{}]".format(primstr, contstr)
+
+
 def compact_elements(elements):
     """
     Create a string (with ranges) given a list of element numbers
@@ -157,3 +199,29 @@ def transform_basis_name(name):
     """
 
     return name.lower()
+
+
+def basis_name_to_filename(name):
+    '''
+    Given a basis set name, transform it into a valid filename
+
+    This makes sure filenames don't contain invalid characters
+    '''
+
+    filename = transform_basis_name(name)
+    filename = filename.replace('*', '_s')
+    return filename
+
+
+def basis_name_from_filename(filename):
+    '''
+    Given a basis set name that was part of a filename, determine the basis set name
+
+    This is opposite of :func:`transform_basis_name`
+
+    Pass only the part of the filename that contains the basis set name
+    '''
+
+    name = filename.lower()
+    name = name.replace('_s', '*')
+    return name

@@ -116,6 +116,11 @@ and can be obtained via :func:`basis_set_exchange.get_reference_formats`
    >>> # As bibtex, restricting to H and F
    >>> bib = basis_set_exchange.get_references('6-31G*', fmt='bib', elements=[1,9])
    >>> print(bib)
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % If you downloaded data from the basis set
+   % exchange or used the basis set exchange python library, please cite:
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   ...
    % H
    %     31G Split-valence basis set for H,He
    %         ditchfield1971a
@@ -205,12 +210,12 @@ A list of families can be obtained with :func:`basis_set_exchange.get_families`.
    >>> # Print all the basis sets known to the BSE
    >>> all_bs = basis_set_exchange.get_all_basis_names()
    >>> print(all_bs)
-   ['3-21g', '4-31g', '5-21g', ...
+   ['2zapa-nr', '2zapa-nr-cv', '3-21g', '3zapa-nr'...
 
    >>> # A list of all families
    >>> all_fam = basis_set_exchange.get_families()
    >>> print(all_fam)
-   ['ahlrichs', 'ahlrichs_fit', ...
+   ['ahlrichs', 'ahlrichs_dhf', 'ahlrichs_fit', ...
 
 
 Lookup by Role
@@ -257,7 +262,7 @@ search parameters are case insensitive. Basis sets match if all criteria are tru
    >>> # Find all basis sets with '31g' in the name
    >>> md = basis_set_exchange.filter_basis_sets('31g')
    >>> md.keys()
-   dict_keys(['4-31g', '6-31g', '6-31g(d,p)', '6-31g*', '6-31g**'])
+   dict_keys(['4-31g', '6-31g', '6-31g(d,p)', '6-31g*', '6-31g**'...
 
    >>> # Find all basis sets with 'aug' in the name that can be used for RI fitting
    >>> md = basis_set_exchange.filter_basis_sets('aug', role='rifit')
@@ -267,7 +272,7 @@ search parameters are case insensitive. Basis sets match if all criteria are tru
    >>> # All basis sets of the dunning family that have '5z' in the name
    >>> md = basis_set_exchange.filter_basis_sets('5z', family='dunning')
    >>> md.keys()
-   dict_keys(['aug-cc-pv5z', 'cc-pv5z'])
+   dict_keys(['aug-cc-pcv5z', 'aug-cc-pv5z', 'aug-cc-pwcv5z', 'cc-pcv5z', 'cc-pv5z', 'cc-pwcv5z'])
 
 
 Basis set and family notes

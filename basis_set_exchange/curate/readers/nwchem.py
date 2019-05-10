@@ -42,10 +42,14 @@ def read_nwchem(basis_lines, fname):
 
                 element_data = bs_data['elements'][element_Z]
 
+                if max(shell_am) <= 1:
+                    func_type = 'gto'
+                else:
+                    func_type = 'gto_spherical'
+
                 shell = {
-                    'function_type': 'gto',
-                    'harmonic_type': 'spherical',
-                    'region': 'valence',
+                    'function_type': func_type,
+                    'region': '',
                     'angular_momentum': shell_am
                 }
 
@@ -87,8 +91,8 @@ def read_nwchem(basis_lines, fname):
 
                     if not element_Z in bs_data['elements']:
                         bs_data['elements'][element_Z] = {}
-                    if not 'element_ecp_electrons' in bs_data['elements'][element_Z]:
-                        bs_data['elements'][element_Z]['element_ecp_electrons'] = n_elec
+                    if not 'ecp_electrons' in bs_data['elements'][element_Z]:
+                        bs_data['elements'][element_Z]['ecp_electrons'] = n_elec
 
                     i += 1
                     continue
@@ -112,7 +116,7 @@ def read_nwchem(basis_lines, fname):
                     bs_data['elements'][element_Z]['ecp_potentials'] = []
                 element_data = bs_data['elements'][element_Z]
 
-                ecp_shell = {'angular_momentum': shell_am, 'ecp_type': 'scalar'}
+                ecp_shell = {'angular_momentum': shell_am, 'ecp_type': 'scalar_ecp'}
 
                 rexponents = []
                 gexponents = []

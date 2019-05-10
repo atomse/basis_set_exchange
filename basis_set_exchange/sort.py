@@ -3,6 +3,7 @@ Sorting of BSE related dictionaries and data
 '''
 
 import sys
+import copy
 
 # Dictionaries for python 3.6 and above are insertion ordered
 # For other versions, use an OrderedDict
@@ -44,11 +45,11 @@ def sort_basis_dict(bs):
         'data_source',
 
         # Elements and data
-        'elements', 'references', 'element_ecp_electrons',
+        'elements', 'references', 'ecp_electrons',
         'electron_shells', 'ecp_potentials', 'components',
 
         # Shell information
-        'function_type', 'harmonic_type', 'region', 'angular_momentum', 'exponents',
+        'function_type', 'region', 'angular_momentum', 'exponents',
         'coefficients',
         'ecp_type', 'angular_momentum', 'r_exponents', 'gaussian_exponents',
         'coefficients'
@@ -75,6 +76,115 @@ def sort_basis_dict(bs):
             bs_sorted[k] = [sort_basis_dict(x) if isinstance(x, dict) else x for x in v]
 
     return bs_sorted
+
+
+def sort_shell(shell, use_copy=True):
+    """
+    Sort a basis set shell into a standard order
+
+    If use_copy is True, the input shells are not modified.
+    """
+
+    if use_copy:
+        shell = copy.deepcopy(shell)
+
+    # Transpose of coefficients
+    tmp_c = list(map(list, zip(*shell['coefficients'])))
+
+    # For each primitive, find the index of the first nonzero coefficient
+    nonzero_idx = [next((i for i, x in enumerate(c) if float(x) != 0.0), None) for c in tmp_c]
+
+    # Zip together exponents and coeffs for sorting
+    tmp = zip(shell['exponents'], tmp_c, nonzero_idx)
+
+    # Sort by decreasing value of exponent
+    tmp = sorted(tmp, key=lambda x: -float(x[0]))
+
+    # Now (stable) sort by first non-zero coefficient
+    tmp = sorted(tmp, key=lambda x: int(x[2]))
+
+    # Unpack, and re-transpose the coefficients
+    tmp_c = [x[1] for x in tmp]
+    shell['exponents'] = [x[0] for x in tmp]
+
+    # Now sort the columns of the coefficient by index of first nonzero coefficient
+    tmp_c = list(map(list, zip(*tmp_c)))
+    nonzero_idx = [next((i for i, x in enumerate(c) if float(x) != 0.0), None) for c in tmp_c]
+
+    tmp = zip(tmp_c, nonzero_idx)
+    tmp = sorted(tmp, key=lambda x: int(x[1]))
+    tmp_c = [x[0] for x in tmp]
+
+    shell['coefficients'] = tmp_c
+
+    return shell
+
+
+def sort_shells(shells, use_copy=True):
+    """
+    Sort a list of basis set shells into a standard order
+
+    The order within a shell is by decreasing value of the exponent.
+
+    The order of the shell list is in increasing angular momentum, and then
+    by decreasing number of primitives, then decreasing value of the largest exponent.
+
+    If use_copy is True, the input shells are not modified.
+    """
+
+    if use_copy:
+        shells = copy.deepcopy(shells)
+
+    # Sort primitives within a shell
+    # (copying already handled above)
+    shells = [sort_shell(sh, False) for sh in shells]
+
+    # Sort the list by increasing AM, then general contraction level, then decreasing highest exponent
+    return list(
+        sorted(
+            shells,
+            key=lambda x: (max(x['angular_momentum']), -len(x['exponents']), -len(x['coefficients']), -float(
+                max(x['exponents'])))))
+
+
+def sort_potentials(potentials, use_copy=True):
+    """
+    Sort a list of ECP potentials into a standard order
+
+    The order within a potential is not modified.
+
+    The order of the shell list is in increasing angular momentum, with the largest
+    angular momentum being moved to the front.
+
+    If use_copy is True, the input potentials are not modified.
+    """
+
+    if use_copy:
+        potentials = copy.deepcopy(potentials)
+
+    # Sort by increasing AM, then move the last element to the front
+    potentials = list(sorted(potentials, key=lambda x: x['angular_momentum']))
+    potentials.insert(0, potentials.pop())
+    return potentials
+
+
+def sort_basis(basis, use_copy=True):
+    """
+    Sorts all the information in a basis set into a standard order
+
+    If use_copy is True, the input basis set is not modified.
+    """
+
+    if use_copy:
+        basis = copy.deepcopy(basis)
+
+    for k, el in basis['elements'].items():
+        if 'electron_shells' in el:
+            el['electron_shells'] = sort_shells(el['electron_shells'], False)
+        if 'ecp_potentials' in el:
+            el['ecp_potentials'] = sort_potentials(el['ecp_potentials'], False)
+
+    return sort_basis_dict(basis)
 
 
 def sort_single_reference(ref_entry):
