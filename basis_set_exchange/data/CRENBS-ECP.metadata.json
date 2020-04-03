@@ -6,9 +6,9 @@
   "names": [
     "CRENBS ECP"
   ],
-  "flags": [],
+  "tags": [],
   "family": "crenb",
-  "description": "CRENBS ECP",
+  "description": "CRENBS ECP (Small ECP orbital basis for use with relativistic, large core ECPs)",
   "role": "orbital",
   "auxiliaries": {}
 }

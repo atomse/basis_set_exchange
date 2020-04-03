@@ -4,7 +4,7 @@
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
 
@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Basis Set Exchange'
-copyright = '2018, Benjamin Pritchard'
+copyright = '2020, Benjamin Pritchard'
 author = 'Benjamin Pritchard'
 
 # The short X.Y version

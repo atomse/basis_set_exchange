@@ -51,12 +51,13 @@ def write_matrix(mat, point_place, convert_exp=False):
         line = ''
         for c, val in enumerate(row):
             sp = pad[r][c] - len(line)
-            # ensure at least one space
-            sp = max(sp, 1)
+            # ensure at least one space, except for the beginning of the line
+            if c > 0:
+                sp = max(sp, 1)
             line += ' ' * sp + str(mat[r][c])
         lines += line + '\n'
 
-    if convert_exp is True:
+    if convert_exp:
         lines = lines.replace('e', 'D')
         lines = lines.replace('E', 'D')
 
@@ -80,8 +81,12 @@ def electron_shell_str(shell, shellidx=None):
     coefficients = shell['coefficients']
     ncol = len(coefficients) + 1
 
+    region = shell['region']
+    if region == '':
+        region = '(none)'
+
     point_places = [8 * i + 15 * (i - 1) for i in range(1, ncol + 1)]
-    s = "Shell: {}Region: {}: AM: {}\n".format(shellidx_str, shell['region'], amchar)
+    s = "Shell: {} Region: {} AM: {}\n".format(shellidx_str, region, amchar)
     s += "Function: {}\n".format(shell['function_type'])
     s += write_matrix([exponents, *coefficients], point_places)
     return s

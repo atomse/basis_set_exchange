@@ -3,6 +3,7 @@ Functions for comparing basis sets and pieces of basis sets
 '''
 
 import operator
+from ..sort import sort_shell
 
 
 def _reldiff(a, b):
@@ -104,7 +105,7 @@ def _compare_matrix(mat1, mat2, rel_tol):
         return False
 
     for i in range(length):
-        if _compare_vector(mat1[i], mat2[i], rel_tol) is False:
+        if not _compare_vector(mat1[i], mat2[i], rel_tol):
             return False
 
     return True
@@ -115,21 +116,21 @@ def compare_electron_shells(shell1, shell2, compare_meta=False, rel_tol=0.0):
     Compare two electron shells for approximate equality
     (exponents/coefficients are within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
     if shell1['angular_momentum'] != shell2['angular_momentum']:
         return False
 
-    # Zip together exponents and coeffs for sorting
+    # Sort into some canonical order
+    shell1 = sort_shell(shell1)
+    shell2 = sort_shell(shell2)
+
+    # Zip together exponents and coeffs
     # This basically creates the typical matrix with exponents
     # being in the first column
     tmp1 = list(zip(shell1['exponents'], *shell1['coefficients']))
     tmp2 = list(zip(shell2['exponents'], *shell2['coefficients']))
-
-    # Now sort by first non-zero coefficient
-    tmp1 = sorted(tmp1)
-    tmp2 = sorted(tmp2)
 
     if not _compare_matrix(tmp1, tmp2, rel_tol):
         return False
@@ -149,10 +150,10 @@ def electron_shells_are_subset(subset, superset, compare_meta=False, rel_tol=0.0
 
     If 'subset' is a subset of the 'superset', True is returned.
 
-    The shells are compared approximately (exponents/coefficients are 
+    The shells are compared approximately (exponents/coefficients are
     within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
     for item1 in subset:
@@ -169,17 +170,17 @@ def electron_shells_are_equal(shells1, shells2, compare_meta=False, rel_tol=0.0)
     '''
     Determine if a list of electron shells is the same as another
 
-    The shells are compared approximately (exponents/coefficients are 
+    The shells are compared approximately (exponents/coefficients are
     within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
-    # Lists are equal if each is a subset of the other
-    # Slow but effective
     if len(shells1) != len(shells2):
         return False
 
+    # Lists are equal if each is a subset of the other
+    # Slow but effective
     return electron_shells_are_subset(shells1, shells2, compare_meta, rel_tol) and electron_shells_are_subset(
         shells2, shells1, compare_meta, rel_tol)
 
@@ -189,7 +190,7 @@ def compare_ecp_pots(potential1, potential2, compare_meta=False, rel_tol=0.0):
     Compare two ecp potentials for approximate equality
     (exponents/coefficients are within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
     if potential1['angular_momentum'] != potential2['angular_momentum']:
@@ -223,10 +224,10 @@ def ecp_pots_are_subset(subset, superset, compare_meta=False, rel_tol=0.0):
 
     If 'subset' is a subset of the 'superset', True is returned.
 
-    The potentials are compared approximately (exponents/coefficients are 
+    The potentials are compared approximately (exponents/coefficients are
     within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
     for item1 in subset:
@@ -243,10 +244,10 @@ def ecp_pots_are_equal(pots1, pots2, compare_meta=False, rel_tol=0.0):
     '''
     Determine if a list of electron shells is the same as another
 
-    The potentials are compared approximately (exponents/coefficients are 
+    The potentials are compared approximately (exponents/coefficients are
     within a tolerance)
 
-    If compare_meta is True, the metadata is also compared for exact equality. 
+    If compare_meta is True, the metadata is also compared for exact equality.
     '''
 
     # Lists are equal if each is a subset of the other
@@ -330,13 +331,12 @@ def compare_basis(bs1,
         return False
 
     for el in els1:
-        if not compare_elements(
-                bs1['elements'][el],
-                bs2['elements'][el],
-                compare_electron_shells_meta=compare_electron_shells_meta,
-                compare_ecp_pots_meta=compare_ecp_pots_meta,
-                compare_meta=compare_elements_meta,
-                rel_tol=rel_tol):
+        if not compare_elements(bs1['elements'][el],
+                                bs2['elements'][el],
+                                compare_electron_shells_meta=compare_electron_shells_meta,
+                                compare_ecp_pots_meta=compare_ecp_pots_meta,
+                                compare_meta=compare_elements_meta,
+                                rel_tol=rel_tol):
             print("Element failed:", el)
             return False
     if compare_meta:

@@ -22,18 +22,23 @@ Importing
 
 All end-user functionality is available by importing the `basis_set_exchange` module.
 
+
 Determining the library version
 -------------------------------
 
 The library version can be determined with :func:`basis_set_exchange.version()`
 
-Getting a basis set
--------------------
+
+Getting a basis set from the library
+------------------------------------
 
 The main function for getting a basis set is :func:`basis_set_exchange.get_basis`.
 Output format is controlled by the `fmt` parameter. By default, a python
 dictionary is returned. If a format is specified, a string is returned
-instread.
+instread. This string will contain the newlines needed to properly format
+the string into a basis set.
+
+The name of the basis set is not case sensitive.
 
 The available formats are listed at the documentation for :func:`basis_set_exchange.get_basis`
 and can be obtained via :func:`basis_set_exchange.get_formats`
@@ -65,13 +70,14 @@ and can be obtained via :func:`basis_set_exchange.get_formats`
 
    >>> # Available formats are available via get_formats
    >>> basis_set_exchange.get_formats()
-   {'nwchem': 'NWChem', 'gaussian94': 'Gaussian94', 'psi4': 'Psi4',...
+   {'nwchem': 'NWChem', 'gaussian94': 'Gaussian', 'psi4': 'Psi4',...
 
 
-By default, all elements for which the basis set is defined are included - this
-can be overridden with the `elements` parameter
+By default, all elements for which the basis set is defined are included. You can specify a 
+subset of elements instead by using the `elements` parameter
 
 .. doctest::
+   :pyversion: >= 3.6
 
    >>> # Get only carbon and oxygen
    >>> bs_str = basis_set_exchange.get_basis('aug-cc-pvtz', elements=[6,8], fmt='nwchem', header=False)
@@ -148,16 +154,16 @@ and can be obtained via :func:`basis_set_exchange.get_reference_formats`
 
    >>> # Available formats are available via get_reference_formats
    >>> basis_set_exchange.get_reference_formats()
-   {'txt': 'Plain Text', 'bib': 'BibTeX', 'json': 'JSON'}
+   {'txt': 'Plain Text', 'bib': 'BibTeX', 'ris': 'RIS', 'endnote': 'EndNote', 'json': 'JSON'}
 
 
 Versioning
 -------------------
 
-Basis sets within the package are versioned. This allows for changes to be made to a
+Basis sets within this package are versioned. This allows for changes to be made to a
 basis set, while keeping the old data accessible for historical purposes.
 Versions are specified by integers. By default,
-v0 will match the original BSE data.
+v0 will match the original EMSL BSE data.
 
 Versions are meant to be increased only when there is a material change to the data.
 If data is simply being added (new elements), the version will not be incremented.
@@ -166,28 +172,33 @@ Both `basis_set_exchange.get_basis` and :func:`basis_set_exchange.get_references
 which is a string. If `version` is not specified, the latest version is used.
 
 .. doctest::
+   :pyversion: >= 3.6
 
-   >>> # Get latest version
-   >>> bs_str = basis_set_exchange.get_basis('6-31G*', fmt='gaussian94')
+   >>> # Get the latest version of 6-31G*
+   >>> basis_set_exchange.get_basis('6-31G*', fmt='gaussian94', header=False)
+   'H     0\nS   3   1.00\n      0.1873113696D+02       0.3349460434D-01\n      0.2825394365D+01...
 
    >>> # Get the original BSE data
-   >>> bs_str = basis_set_exchange.get_basis('6-31G*', version='0', fmt='gaussian94')
+   >>> basis_set_exchange.get_basis('6-31G*', version=0, fmt='gaussian94', header=False)
+   'H     0\nS   3   1.00\n     18.7311370              0.03349460\n      2.8253937...
 
-   >>> # Versions can also be passed as integers
-   >>> bs_str = basis_set_exchange.get_basis('6-31G*', version=0, fmt='gaussian94')
+   >>> # Versions can also be passed as strings
+   >>> basis_set_exchange.get_basis('6-31G*', version='0', fmt='gaussian94', header=False)
+   'H     0\nS   3   1.00\n     18.7311370              0.03349460\n      2.8253937...
 
 
-Listing Basis Sets and Getting Metadata
----------------------------------------
 
-The BSE contains metadata for all the basis sets that is in its data directory.
+Listing Basis Sets and Getting Basis Set Metadata
+-------------------------------------------------
+
+This package contains metadata for all the basis sets that is in its data directory.
 This information can be accessed by the :func:`basis_set_exchange.get_metadata` function
 
 .. note:: Note that the key is the name of the basis set that has been transformed
           into some internal name (see :func:`basis_set_exchange.transform_basis_name`)
 
 A simple list containing all the basis set names can be obtained via :func:`basis_set_exchange.get_all_basis_names`.
-A list of families can be obtained with :func:`basis_set_exchange.get_families`.
+A simple list of families can be obtained with :func:`basis_set_exchange.get_families`.
 
 .. doctest::
    :pyversion: >= 3.6
@@ -208,18 +219,16 @@ A list of families can be obtained with :func:`basis_set_exchange.get_families`.
    ['1', '2', '3', '4', '5', '6',...
 
    >>> # Print all the basis sets known to the BSE
-   >>> all_bs = basis_set_exchange.get_all_basis_names()
-   >>> print(all_bs)
-   ['2zapa-nr', '2zapa-nr-cv', '3-21g', '3zapa-nr'...
+   >>> basis_set_exchange.get_all_basis_names()
+   ['2ZaPa-NR', '2ZaPa-NR-CV', '3-21G', '3ZaPa-NR', '3ZaPa-NR-CV',...
 
    >>> # A list of all families
-   >>> all_fam = basis_set_exchange.get_families()
-   >>> print(all_fam)
-   ['ahlrichs', 'ahlrichs_dhf', 'ahlrichs_fit', ...
+   >>> basis_set_exchange.get_families()
+   ['acvxz-j', 'ahlrichs', 'ahlrichs_dhf', 'ahlrichs_fit', ...
 
 
-Lookup by Role
---------------
+Lookup a basis by Role
+----------------------
 
 Many basis sets have auxiliary basis sets for different purposes (density fitting,
 for example). These auxiliary basis sets can be queried in the BSE
@@ -227,8 +236,7 @@ using the :func:`basis_set_exchange.lookup_basis_by_role`. This function takes t
 primary basis set and the role you wish to look up. The function
 returns the name of the basis set.
 
-Like the other functions, the basis name and role are not
-case sensitive.
+Like the other functions, the basis name and role are not case sensitive.
 
 The available roles are listed at the documentation for :func:`basis_set_exchange.lookup_basis_by_role`
 and can be obtained via :func:`basis_set_exchange.get_roles`
@@ -251,7 +259,7 @@ and can be obtained via :func:`basis_set_exchange.get_roles`
 
 
 Filtering basis sets
---------------------------------
+--------------------
 
 Basis sets can be searched for via simple filtering with :func:`basis_set_exchange.filter_basis_sets`. All
 search parameters are case insensitive. Basis sets match if all criteria are true.
@@ -262,21 +270,21 @@ search parameters are case insensitive. Basis sets match if all criteria are tru
    >>> # Find all basis sets with '31g' in the name
    >>> md = basis_set_exchange.filter_basis_sets('31g')
    >>> md.keys()
-   dict_keys(['4-31g', '6-31g', '6-31g(d,p)', '6-31g*', '6-31g**'...
+   dict_keys(['4-31g', ...
 
    >>> # Find all basis sets with 'aug' in the name that can be used for RI fitting
    >>> md = basis_set_exchange.filter_basis_sets('aug', role='rifit')
    >>> md.keys()
-   dict_keys(['aug-cc-pv5z-rifit', 'aug-cc-pv6z-rifit', 'aug-cc-pvdz-rifit', 'aug-cc-pvqz-rifit', 'aug-cc-pvtz-rifit'])
+   dict_keys(['aug-cc-pv5z-pp-rifit', 'aug-cc-pv5z-rifit', 'aug-cc-pv6z-rifit', ...
 
    >>> # All basis sets of the dunning family that have '5z' in the name
    >>> md = basis_set_exchange.filter_basis_sets('5z', family='dunning')
    >>> md.keys()
-   dict_keys(['aug-cc-pcv5z', 'aug-cc-pv5z', 'aug-cc-pwcv5z', 'cc-pcv5z', 'cc-pv5z', 'cc-pwcv5z'])
+   dict_keys(['aug-cc-pcv5z', 'aug-cc-pv5z', 'aug-cc-pwcv5z', 'cc-pcv5z', 'cc-pv5z', 'cc-pwcv5z'...
 
 
 Basis set and family notes
---------------------------------
+--------------------------
 
 Notes about a basis set or a basis set family can be obtained, also.
 
@@ -284,7 +292,7 @@ Notes about a basis set or a basis set family can be obtained, also.
 
    >>> # Notes from a basis (name is case insensitive)
    >>> basis_set_exchange.get_basis_notes('6-31g')
-   'Notes from the original BSE\n===========================\n\nThe 6-31G basis set uses 6...
+   '--------------------------------------------------------------------------------\n   Original BSE Contributor: Dr. David Feller...
 
    >>> # Get the family of a basis set from the metadata
    >>> fam = basis_set_exchange.get_basis_family('6-31G**')
@@ -297,7 +305,7 @@ Notes about a basis set or a basis set family can be obtained, also.
 
 
 Memoization
---------------------------------
+-----------
 
 By default, the library will memoize/cache some internal data. This has a big effect when,
 for example, running :func:`basis_set_exchange.get_basis` with the same basis set name (even if choosing

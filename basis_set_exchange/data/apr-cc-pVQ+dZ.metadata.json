@@ -4,9 +4,10 @@
     "schema_version": "0.1"
   },
   "names": [
-    "apr-cc-pV(Q+d)Z"
+    "apr-cc-pV(Q+d)Z",
+    "maug-cc-pV(Q+d)Z"
   ],
-  "flags": [],
+  "tags": [],
   "family": "truhlar",
   "description": "apr-cc-pV(Q+d)Z basis of Papajak/Truhlar",
   "role": "orbital",

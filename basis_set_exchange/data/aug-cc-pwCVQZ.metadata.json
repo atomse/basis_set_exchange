@@ -6,9 +6,11 @@
   "names": [
     "aug-cc-pwCVQZ"
   ],
-  "flags": [],
+  "tags": [],
   "family": "dunning",
   "description": "QZ3P    Quadruple Zeta + Polarization + Tight Core + diffuse",
   "role": "orbital",
-  "auxiliaries": {}
+  "auxiliaries": {
+    "rifit": "aug-cc-pwcvqz-rifit"
+  }
 }

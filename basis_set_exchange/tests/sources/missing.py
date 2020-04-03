@@ -19,11 +19,10 @@ missing = {k: list(v['versions'].keys()) for k, v in md.items()}
 
 for s in auth_sources:
     bsname, ver, _, _ = s.split('.')
-    bsname = misc.basis_name_from_filename(bsname)
 
-    if not bsname in missing:
+    if bsname not in missing:
         raise RuntimeError("Source {} does not correspond to a basis set in the library".format(bsname))
-    if not ver in missing[bsname]:
+    if ver not in missing[bsname]:
         raise RuntimeError("Source {} version {} does not correspond to a basis set version in the library".format(
             bsname, ver))
 
@@ -34,7 +33,7 @@ for s in auth_sources:
         other_name = misc.transform_basis_name(other_name)
         missing[other_name].remove(ver)
 
-missing = {k: v for k, v in missing.items() if len(v) > 0}
+missing = {k: v for k, v in missing.items() if v}
 
 maxlen = max([len(k) for k in missing.keys()]) + 5
 

@@ -1,3 +1,154 @@
+v0.8.12
+--------------------
+  * Better dectection of duplicate shells within general contractions
+  * Adds RIS output for references
+  * Add v0 basis sets
+    * Roos augmented ANO DZ/TZ
+    * Dunning F12 RIFIT
+  * Add v1 basis sets
+    * Jensen (aug-)pcH
+    * ANO-R (including ANO-R{0,1,2,3})
+    * ANO-RCC-{MB,VDZ,VDZP,VTZ,VTZP,VQZP} from Molcas
+  * Fixes Sm p-shell in cc-pwCVQZ-DK3 (creates v2)
+  * Major refactor of readers/writers
+    * Adds lots of testing/validation to readers
+    * Moves readers out of curation.
+    * Renames output converters to writers
+  * Adds additional validation to data via schema and the
+    validator module
+  * Adds functionality for converting between basis set formats
+
+
+v0.8.11
+--------------------
+  * Adds PQS output converter
+  * Adds Endnote reference converter 
+  * Adds v1 basis sets
+    * Zorilla SBO4-SZ-3G and SBO4-DZ(d)-3G
+    * DFO of Porezag/Pederson
+    * ANO-DK3
+
+
+v0.8.10
+--------------------
+  * Adds output converters
+    * Orca
+    * BDF
+    * AcesII
+  * Fixes issue in turbomole output (AM ordering)
+  * Fixes issue in gaussian output (missing blank line)
+  * Adds v0 basis sets
+    * Dunning PP fitting
+    * aug-cc-pwCVXZ-PP (X=D,T,Q,5)
+    * (aug)-cc-pwCVXZ-RIFIT (X=D,T,Q,5)
+    * Dunning OPTRI (including F12 and PP)
+  * Adds v1 basis sets
+    * x2c-SV(P)all-s, x2c-SVPall-s,
+      x2c-TZVPall-s, x2c-TZVPPall-s
+    * Dunning X2C/DK3
+    * jgauss basis sets from cfour
+
+
+v0.8.9
+--------------------
+  * Adds QChem output converter
+  * Adds v0 basis sets
+    * Partridge Uncontracted 1,2,3,4
+    * NASA Ames cc-*
+    * Dunning SV/DZ/TZ (including polarization/diffuse/rydberg)
+    * Binning 641 and 962 (including polarization/diffuse)
+    * Dunning 'seg-opt'
+    * Wachters+f
+    * aug-mcc family
+  * Adds v1 basis sets
+    * Sapporo family (deprecated, pre-2012 sets)
+
+
+v0.8.8
+--------------------
+  * Fixes bug in psi4 & qcschema output, where basis sets
+    were always 'cartesian'
+  * Adds v1 basis sets
+    * Sapporo family
+    * ORP
+    * acvXz-J family
+
+
+v0.8.7
+--------------------
+  * Adds v0 basis sets
+    * Sadlej family
+    * doubly-augmented Dunning (d-aug)
+  * Sadlej v1 (fixes some errors)
+  * Adds CP2K output converter
+  * More consistent transformations of basis set names
+  * Updates description/notes for basis sets
+    * LANL
+    * lehtola_emd
+    * jensen
+    * jorge
+    * Ranasinghe/Petersson
+
+
+v0.8.6
+--------------------
+  * Adds v0 basis sets
+    * "Ahlrichs" basis sets (PVDZ, TZV, VDZ, VTZ)
+    * Blaudeau basis sets for K,Ca
+    * J-coupling basis sets of Sauer (aug-cc-pVTZ-J, pople)
+    * Misc dunning
+        * aug-cc-pv7z, pv-6z, pv-7z
+        * cc-pv8z, cc-pv9z
+        * aug-pv7z
+    * cc-p(C)V{DTQ}-F12
+    * Dyall relativistic basis sets cc-pV{DTQ5}Z(*/sf/*)
+    * cc-pwCV{T,Q,5}-DK
+    * STO-3G*
+    * nlo-v, nmr-dkh, and pt-mdzp of Paschoal
+    * Cologne DKH2 of Dolg
+  * Small fix to dalton output converter
+    
+
+v0.8.5
+--------------------
+  * Adds v0 basis sets
+    * Stuttgart family
+    * WTBS
+  * Better sorting of shells
+  * Better "optimize general contractions"
+
+
+v0.8.4
+--------------------
+  * Adds converters
+    * Molcas
+    * QCSchema
+  * Fixes bug in GAMESS-UK converter with SP shells
+  * Adds v1 of {2,3,4,5,6,7}ZaPa-NR(-CV)
+  * Adds v0 of NASA AMES ANO basis sets
+  * Adds revision dates for basis sets
+  * Add original BSE contributors and dates to notes files
+
+
+v0.8.3
+--------------------
+  * Adds converters
+    * GAMESS UK
+    * deMon2K
+    * xTron
+    
+
+v0.8.2
+--------------------
+  * Adds data from old BSE:
+      * Adds rest of LANL (LANL08, LANL2TZ, LANL2DZDP) 
+
+
+v0.8.1
+--------------------
+  * Adds dalton output format
+
+
 v0.7.0
 --------------------
   * Fixes bug in make_general when shell contains duplicate exponents (#59)

@@ -6,9 +6,9 @@
   "names": [
     "CRENBL ECP"
   ],
-  "flags": [],
+  "tags": [],
   "family": "crenb",
-  "description": "CRENBL ECP",
+  "description": "CRENBL ECP (Large ECP orbital basis for use with small core potentials)",
   "role": "orbital",
   "auxiliaries": {}
 }

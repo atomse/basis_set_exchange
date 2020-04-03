@@ -13,6 +13,18 @@ def _Z_from_str(s):
         return lut.element_Z_from_sym(s)
 
 
+def transpose_matrix(mat):
+    '''Transposes a matrix (list of lists) commonly done do coefficients'''
+
+    return list(map(list, zip(*mat)))
+
+
+def max_am(shells):
+    '''Determine the maximum angular momentum of a list of shells or potentials'''
+    all_am = [max(x['angular_momentum']) for x in shells]
+    return max(all_am)
+
+
 def contraction_string(element):
     """
     Forms a string specifying the contractions for an element
@@ -62,7 +74,7 @@ def compact_elements(elements):
     For example, [1, 2, 3, 6, 7, 8, 10] will return "H-Li,C-O,Ne"
    """
 
-    if len(elements) == 0:
+    if not elements:
         return
 
     # We have to convert to integers for this function
@@ -131,7 +143,7 @@ def expand_elements(compact_el, as_str=False):
 
     # If an integer, just return it
     if isinstance(compact_el, int):
-        if as_str is True:
+        if as_str:
             return [str(compact_el)]
         else:
             return [compact_el]
@@ -139,7 +151,7 @@ def expand_elements(compact_el, as_str=False):
     # If compact_el is a list, make it a comma-separated string
     if isinstance(compact_el, list):
         compact_el = [str(x) for x in compact_el]
-        compact_el = [x for x in compact_el if len(x) > 0]
+        compact_el = [x for x in compact_el if x]
         compact_el = ','.join(compact_el)
 
     # Find multiple - or ,
@@ -152,7 +164,7 @@ def expand_elements(compact_el, as_str=False):
     compact_el = compact_el.strip(',')
 
     # Check if I was passed an empty string or list
-    if len(compact_el) == 0:
+    if not compact_el:
         return []
 
     # Find some erroneous patterns
@@ -176,7 +188,7 @@ def expand_elements(compact_el, as_str=False):
     # Now go over each one and replace elements with ints
     el_list = []
     for el in tmp_list:
-        if not '-' in el:
+        if '-' not in el:
             el_list.append(_Z_from_str(el))
         else:
             begin, end = el.split('-')
@@ -184,7 +196,7 @@ def expand_elements(compact_el, as_str=False):
             end = _Z_from_str(end)
             el_list.extend(list(range(begin, end + 1)))
 
-    if as_str is True:
+    if as_str:
         return [str(x) for x in el_list]
     else:
         return el_list
@@ -198,7 +210,10 @@ def transform_basis_name(name):
     converting the name to all lower case.
     """
 
-    return name.lower()
+    name = name.lower()
+    name = name.replace('/', '_sl_')
+    name = name.replace('*', '_st_')
+    return name
 
 
 def basis_name_to_filename(name):
@@ -208,9 +223,7 @@ def basis_name_to_filename(name):
     This makes sure filenames don't contain invalid characters
     '''
 
-    filename = transform_basis_name(name)
-    filename = filename.replace('*', '_s')
-    return filename
+    return transform_basis_name(name)
 
 
 def basis_name_from_filename(filename):
@@ -223,5 +236,6 @@ def basis_name_from_filename(filename):
     '''
 
     name = filename.lower()
-    name = name.replace('_s', '*')
+    name = name.replace('_sl_', '/')
+    name = name.replace('_st_', '*')
     return name

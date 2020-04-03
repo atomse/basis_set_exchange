@@ -10,11 +10,15 @@ with open(_readme_path, 'r', encoding='utf-8') as readme_file:
     long_description = readme_file.read()
 
 # Find the json files in the data dir and the schema dir
-bse_package_data = []
+bse_package_data = ['pytest.ini']
 data_dirs = ['data', 'schema',
              os.path.join('tests', 'sources'),
              os.path.join('tests', 'fakedata'),
-             os.path.join('tests', 'test_data')
+             os.path.join('tests', 'curate_test_data'),
+             os.path.join('tests', 'reader_test_data'),
+             os.path.join('tests', 'validator_test_data'),
+             os.path.join('tests', 'dunning_extend'),
+             os.path.join('tests', 'truhlar')
 ]
 
 for data_dir in data_dirs:
@@ -24,7 +28,7 @@ for data_dir in data_dirs:
             bse_package_data.append(os.path.relpath(filepath, 'basis_set_exchange'))
 
 if __name__ == "__main__":
-    my_packages=setuptools.find_packages()
+    my_packages = setuptools.find_packages()
 
     setuptools.setup(
         name='basis_set_exchange',
@@ -52,6 +56,7 @@ if __name__ == "__main__":
                 'sphinxcontrib-programoutput',
                 'sphinx_rtd_theme',
                 'numpydoc',
+                'graphviz'
             ],
             'tests': [
                 'pytest>=4.0',
@@ -69,7 +74,8 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7'
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8'
         ],
 
         package_data={'basis_set_exchange': bse_package_data},

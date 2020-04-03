@@ -1,15 +1,17 @@
+.. _bse_cli:
+
 The bse command line interface
 ==============================================
 
-The basis set exchange package contains a command-line interface
-called ``bse``. This command can be used to obtain basis sets and references,
+The basis set exchange package contains a command-line interface called
+``bse``. This command can be used to obtain/print basis sets and references,
 as well as query the library for information and metadata.
 
 
 .. _cliinstall:
 
 Installation
--------------------
+------------
 
 The command line is automatically installed when the library is installed
 via ``pip`` or similar python package managers.
@@ -19,7 +21,7 @@ the ``bse`` program to the PATH environment variable.
 
 
 TAB completion
--------------------
+--------------
 
 Tab completion is available for the bash interpreter and is tremendously useful.
 If enabled, TAB autocompletion will be enabled for
@@ -66,7 +68,7 @@ There are two global options available to all subcommands. The first is an alter
 data directory can be specified with ``-d`` or ``--data-dir``. By default, the built-in
 data directory will be used.
 
-.. command-output:: bse -d /home/ben/my_data_dir list-basis-sets
+.. command-output:: bse -d ${HOME}/my_data_dir list-basis-sets
 
 Also, output can be written to a file rather than to the terminal
 
@@ -87,8 +89,6 @@ Examples:
     * ``H-Ne`` - for hydrogen through neon (inclusive)
     * ``1-10`` - same as above
     * ``C,8,p-17`` - carbon, oxygen, phosphorus through chlorine
-
-
 
 
 Subcommands
@@ -120,6 +120,23 @@ With ``-n`` or ``--no-description``, the command will hide the description of th
 .. command-output:: bse list-ref-formats
 .. command-output:: bse list-ref-formats -n
 
+
+list-wrtier-formats
+*******************
+
+Print a list of the formats that can be written to by the library
+
+.. command-output:: bse list-writer-formats
+
+
+list-reader-formats
+*******************
+
+Print a list of the formats that can be read by the library
+
+.. command-output:: bse list-reader-formats
+
+
 list-roles
 *******************
 
@@ -131,7 +148,7 @@ Lists the available basis set roles. Takes no arguments
 get-data-dir
 *******************
 
-Obtains the default data directory (built into the BSE package)
+Print the default data directory (built into the BSE package)
 
 .. command-output:: bse get-data-dir
 
@@ -177,14 +194,13 @@ Find the name of an auxiliary basis set given the primary basis and the desired 
 get-basis
 *******************
 
-Obtain a formatted basis set.
+Print a formatted basis set from the library.
 This command has several options. See ``bse get-basis -h`` for a complete list.
 
 This subcommand takes two required arguments: the name of the basis set
 and the format. See `list-basis-sets`_ and `list-formats`_.
 
-The main popular option is ``--elements`` which takes an element string.
-See `Element strings`_.
+The main popular option is ``--elements`` which takes an element string. See `Element strings`_.
 By default, all elements for which the basis set is defined are included.
 
 A version of the basis set can be specified with ``--version``.
@@ -210,7 +226,7 @@ Some examples:
 get-refs
 *******************
 
-Obtain formatted reference for a basis set.
+Print formatted reference info for a basis set.
 
 This subcommand takes two required arguments: the name of the basis set,
 and the desired reference format. See `list-basis-sets`_ and `list-ref-formats`_. 
@@ -227,7 +243,7 @@ See `get-versions`_ for how to list versions available for a basis set.
 get-info
 *******************
 
-Obtain some metadata about a basis set.
+Print some metadata about a basis set.
 This takes only one required argument (the name of the basis set).
 
 .. command-output:: bse get-info cc-pvdz
@@ -236,7 +252,7 @@ This takes only one required argument (the name of the basis set).
 get-notes
 *******************
 
-Obtain the notes about a basis set.
+Print the notes about a basis set.
 This takes only one required argument (the name of the basis set).
 
 .. command-output:: bse get-notes sto-3g
@@ -266,7 +282,7 @@ With ``-n`` or ``--no-description``, the command will hide the description of th
 get-family-notes
 *******************
 
-Obtain the notes about a basis set family. This takes only one required argument (the basis set family).
+Print the notes about a basis set family. This takes only one required argument (the basis set family).
 
 .. command-output:: bse get-family-notes sto
    :ellipsis: 10
@@ -276,3 +292,9 @@ create-bundle
 *******************
 
 See :ref:`bundles`
+
+
+convert-basis
+*******************
+
+See :ref:`conversion`

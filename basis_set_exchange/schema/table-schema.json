@@ -8,6 +8,7 @@
     "additionalProperties": false,
     "required": [
         "molssi_bse_schema",
+        "revision_date",
         "revision_description",
         "elements"
     ],
@@ -33,9 +34,11 @@
                 }
             }
         },
+        "revision_date": {
+            "$ref": "common-definitions.json#revision_date"
+        },
         "revision_description": {
-            "description": "Brief description of the difference between this revision and the last",
-            "type": "string"
+            "$ref": "common-definitions.json#revision_description"
         },
         "elements": {
             "description": "Data for the elements of the basis set",

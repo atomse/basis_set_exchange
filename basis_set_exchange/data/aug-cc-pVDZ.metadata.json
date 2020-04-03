@@ -6,11 +6,12 @@
   "names": [
     "aug-cc-pVDZ"
   ],
-  "flags": [],
+  "tags": [],
   "family": "dunning",
   "description": "aug-cc-pVDZ",
   "role": "orbital",
   "auxiliaries": {
-    "rifit": "aug-cc-pvdz-rifit"
+    "rifit": "aug-cc-pvdz-rifit",
+    "optri": "aug-cc-pvdz-optri"
   }
 }

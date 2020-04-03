@@ -14,8 +14,9 @@ rand_seed = 39466  # from random.org
 # Load all the metadata once
 data_dir = bse.api._default_data_dir
 bs_metadata = bse.get_metadata()
-bs_names = bse.get_all_basis_names()
-bs_formats = list(bse.get_formats().keys()) + [None]
+bs_names = list(bs_metadata.keys())
+bs_read_formats = list(bse.get_reader_formats().keys())
+bs_write_formats = list(bse.get_writer_formats().keys()) + [None]
 ref_formats = list(bse.get_reference_formats().keys()) + [None]
 all_families = bse.get_families()
 all_roles = bse.get_roles()
@@ -33,8 +34,20 @@ fake_data_dir = os.path.join(_my_dir, 'fakedata')
 # Directory with authoritative sources
 auth_data_dir = os.path.join(_my_dir, 'sources')
 
-# Directory with other testing data
-test_data_dir = os.path.join(_my_dir, 'test_data')
+# Directory with files for testing curation functions
+curate_test_data_dir = os.path.join(_my_dir, 'curate_test_data')
+
+# Directory with files for testing readers
+reader_test_data_dir = os.path.join(_my_dir, 'reader_test_data')
+
+# Directory with files for testing the validator
+validator_test_data_dir = os.path.join(_my_dir, 'validator_test_data')
+
+# Directory with files for testing dunning aug extension
+dunningext_test_data_dir = os.path.join(_my_dir, 'dunning_extend')
+
+# Directory with files for testing truhlar calenderization
+truhlar_test_data_dir = os.path.join(_my_dir, 'truhlar')
 
 # All files in the data dir
 all_files = bse.fileio.get_all_filelist(data_dir)
@@ -68,8 +81,6 @@ for x in os.listdir(auth_data_dir):
         raise RuntimeError("Duplicate basis set in authoritative sources: {}".format(base))
 
     auth_src_map[base] = os.path.join(auth_data_dir, x)
-
-
 
 
 def bool_matrix(size):

@@ -2,12 +2,11 @@
 Test for validating the formatting of the json files
 """
 
-import glob
 import os
 import pytest
 
-from basis_set_exchange import validator
-from .common_testvars import all_metadata_paths, all_table_paths, all_element_paths, all_component_paths, data_dir
+from basis_set_exchange import api, validator
+from .common_testvars import bs_names_vers, all_metadata_paths, all_table_paths, all_element_paths, all_component_paths, data_dir
 
 
 @pytest.mark.parametrize('file_path', all_metadata_paths)
@@ -38,5 +37,8 @@ def test_valid_reffile():
     validator.validate_file('references', file_path)
 
 
-def test_valid_data_dir():
-    validator.validate_data_dir(data_dir)
+@pytest.mark.parametrize('bs_name,bs_ver', bs_names_vers)
+def test_valid_complete(bs_name, bs_ver):
+    '''Test that all basis set data is valid when obtained through get_basis'''
+    data = api.get_basis(bs_name, version=bs_ver)
+    validator.validate_data('complete', data)

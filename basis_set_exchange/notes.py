@@ -2,8 +2,6 @@
 Functionality for handling basis set and family notes
 '''
 
-import textwrap
-
 from . import references
 
 
@@ -28,13 +26,11 @@ def process_notes(notes, ref_data):
     reference_sec += '-------------------------------------------------\n'
 
     # Add reference data
-    if len(found_refs) == 0:
+    if not found_refs:
         return notes
 
     for r in sorted(found_refs):
-        rtxt = references.reference_text(ref_data[r])
-        reference_sec += r + '\n'
-        reference_sec += textwrap.indent(rtxt, ' ' * 4)
-        reference_sec += '\n\n'
+        rtxt = references.reference_text(r, ref_data[r])
+        reference_sec += rtxt + '\n\n'
 
     return notes + reference_sec

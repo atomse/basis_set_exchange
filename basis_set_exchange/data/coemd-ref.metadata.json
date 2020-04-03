@@ -6,9 +6,9 @@
   "names": [
     "coemd-ref"
   ],
-  "flags": [],
+  "tags": [],
   "family": "lehtola_emd",
-  "description": "coemd-ref",
+  "description": "coemd-ref: completness-optimized for electron momentum density",
   "role": "orbital",
   "auxiliaries": {}
 }

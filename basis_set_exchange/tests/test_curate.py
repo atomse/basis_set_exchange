@@ -5,10 +5,9 @@ Tests BSE curation functions
 import os
 import pytest
 import shutil
-import bz2
 
-from basis_set_exchange import api, curate, fileio
-from .common_testvars import data_dir, test_data_dir
+from basis_set_exchange import api, curate, readers, fileio
+from .common_testvars import data_dir, curate_test_data_dir
 
 
 # yapf: disable
@@ -110,11 +109,11 @@ def test_diff_json_files_same(tmp_path):
 def test_diff_json_files(tmp_path):
     tmp_path = str(tmp_path)  # Needed for python 3.5
 
-    filename1 = '6-31G_s_s-full.json.bz2' 
-    filename2 = '6-31G-full.json.bz2' 
+    filename1 = '6-31G_s_s-full.json.bz2'
+    filename2 = '6-31G-full.json.bz2'
 
-    file1 = os.path.join(test_data_dir, filename1)
-    file2 = os.path.join(test_data_dir, filename2)
+    file1 = os.path.join(curate_test_data_dir, filename1)
+    file2 = os.path.join(curate_test_data_dir, filename2)
 
     tmpfile1 = os.path.join(tmp_path, filename1)
     tmpfile2 = os.path.join(tmp_path, filename2)
@@ -131,8 +130,23 @@ def test_diff_json_files(tmp_path):
     assert len(diff1['elements']) == 36
     assert len(diff2['elements']) == 0
 
-    reffilename = '6-31G_s_s-polarization.json.bz2' 
-    reffile = os.path.join(test_data_dir, reffilename)
+    reffilename = '6-31G_s_s-polarization.json.bz2'
+    reffile = os.path.join(curate_test_data_dir, reffilename)
     refdata = fileio.read_json_basis(reffile)
 
     assert curate.compare_basis(diff1, refdata, rel_tol=0.0)
+
+
+def test_g94_scaling(tmp_path):
+    tmp_path = str(tmp_path)  # Needed for python 3.5
+
+    filename1 = 'sbo4-dz-scaled.gbs.bz2'
+    filename2 = 'sbo4-dz-unscaled.gbs.bz2'
+
+    file1 = os.path.join(curate_test_data_dir, filename1)
+    file2 = os.path.join(curate_test_data_dir, filename2)
+
+    bs1 = readers.read_formatted_basis_file(file1)
+    bs2 = readers.read_formatted_basis_file(file2)
+
+    assert curate.compare_basis(bs1, bs2, rel_tol=1.0e-14)

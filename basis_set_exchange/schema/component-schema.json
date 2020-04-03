@@ -52,155 +52,26 @@
             "additionalProperties": false,
             "patternProperties":   {
                 "^\\d+$" : {
-                    "$ref" : "#/definitions/bse_basis_data"
-                }
-            }
-        }
-    },
-    "definitions": {
-        "bse_electron_shell": {
-            "description": "Information for a single electronic shell",
-            "additionalProperties": false,
-            "required": [
-                "function_type",
-                "region",
-                "angular_momentum",
-                "exponents",
-                "coefficients"
-            ],
-            "properties": {
-                "function_type": {
-                    "description": "Type of function for this shell",
-                    "type": "string",
-                    "enum": [ "gto", "gto_spherical", "gto_cartesian", "sto" ]
-                },
-                "region": {
-                    "description": "The region this shell describes",
-                    "type": "string",
-                    "enum": [ "", "valence", "polarization", "core", "tight", "diffuse" ]
-                },
-                "angular_momentum": {
-                    "description": "Angular momentum (as an array of integers)",
-                    "type": "array",
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "integer",               
-                        "minimum": 0
-                    }
-                },
-                "exponents": {
-                    "description": "Exponents for this contracted shell",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "coefficients": {
-                    "description": "General contraction coefficients for this contracted shell",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "description": "Segmented contraction coefficients",
-                        "type": "array",
-                        "minItems": 1,
-                        "items": { "type": "string" }
-                    }
-                }
-            }
-        },
-        "ecp_potential": {
-            "description": "ECP potential",
-            "additionalProperties": false,
-            "required": [
-                "ecp_type",
-                "angular_momentum",
-                "r_exponents",
-                "gaussian_exponents",
-                "coefficients"
-            ],
-            "properties": {
-                "ecp_type": {
-                    "description": "Type of the ECP Potential",
-                    "type": "string",
-                    "enum": [ "scalar_ecp", "spinorbit_ecp" ]
-                },
-                "angular_momentum": {
-                    "description": "Angular momentum (as an array of integers)",
-                    "type": "array",
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "integer",               
-                        "minimum": 0
-                    }
-                },
-                "r_exponents": {
-                    "description": "Exponents of the r term",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "gaussian_exponents": {
-                    "description": "Exponents of the gaussian term",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "coefficients": {
-                    "description": "General contraction coefficients for this contracted shell",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "description": "Segmented contraction coefficients",
-                        "type": "array",
-                        "minItems": 1,
-                        "items": { "type": "string" }
-                    }
-                }
-            }
-        },
-        "bse_basis_data": {
-            "description": "Data for a single element or atom in the basis set",
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "references": {
-                    "description": "Citation/Reference information for this element component",
-                    "type": "array",
-                    "minItems": 0,
-                    "uniqueItems": true,
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "electron_shells": {
-                    "description": "(Electronic) shells for this element",
-                    "type": "array",
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "items": {
-                        "$ref": "#/definitions/bse_electron_shell"
-                    }
-                },
-                "ecp_electrons":
-                {
-                    "description": "Number of electrons replaced by ECP",
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "ecp_potentials": {
-                    "description": "Effective Core Potential for this element",
-                    "type": "array",
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "items": {
-                        "$ref": "#/definitions/ecp_potential"
+                    "description": "Data for a single element or atom in the basis set",
+                    "type": "object",
+                    "required": [
+                        "references"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "references": {
+                            "$ref": "common-definitions.json#reference_keys"
+                        },
+                        "electron_shells": {
+                            "$ref": "common-definitions.json#electron_shell_list"
+                        },
+                        "ecp_electrons":
+                        {
+                            "$ref": "common-definitions.json#ecp_electrons"
+                        },
+                        "ecp_potentials": {
+                            "$ref": "common-definitions.json#ecp_potential_list"
+                        }
                     }
                 }
             }

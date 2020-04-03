@@ -1,12 +1,17 @@
 '''
-Main interface to Basis Set Exchange functionality
+Main interface to Basis Set Exchange internal basis sets
+
+This module contains the interface for getting basis set data
+and references from the internal data store of basis sets. As much
+as possible, this is being kept separate from the typical reading/writing
+functionality of the library.
 '''
 
 import os
 import textwrap
 
 from . import compose
-from . import converters
+from . import writers
 from . import fileio
 from . import manip
 from . import memo
@@ -29,12 +34,9 @@ def version():
 # of this installation
 _my_dir = os.path.dirname(os.path.abspath(__file__))
 _default_data_dir = os.path.join(_my_dir, 'data')
-_default_schema_dir = os.path.join(_my_dir, 'schema')
 
 # Main URL of the project
 _main_url = 'https://www.basissetexchange.org'
-
-# Reference for the BSE
 
 
 def _get_basis_metadata(name, data_dir):
@@ -49,7 +51,7 @@ def _get_basis_metadata(name, data_dir):
     # Get the metadata for all basis sets
     metadata = get_metadata(data_dir)
 
-    if not tr_name in metadata:
+    if tr_name not in metadata:
         raise KeyError("Basis set {} does not exist".format(name))
 
     return metadata[tr_name]
@@ -129,12 +131,13 @@ def get_basis(name,
 
         Available formats are
 
-            * nwchem
-            * gaussian94
-            * psi4
+            * bdf
             * gamess_us
-            * turbomole
+            * gaussian94
             * json
+            * nwchem
+            * psi4
+            * turbomole
 
     uncontract_general : bool
         If True, remove general contractions by duplicating the set
@@ -173,7 +176,7 @@ def get_basis(name,
     else:
         version = str(version)  # Version may be an int
 
-    if not version in bs_data['versions']:
+    if version not in bs_data['versions']:
         raise KeyError("Version {} does not exist for basis {}".format(version, name))
 
     # Compose the entire basis set (all elements)
@@ -191,12 +194,12 @@ def get_basis(name,
 
         # Did the user pass an empty string or empty list? If so, include
         # all elements
-        if len(elements) != 0:
+        if elements:
             bs_elements = basis_dict['elements']
 
             # Are elements part of this basis set?
             for el in elements:
-                if not el in bs_elements:
+                if el not in bs_elements:
                     elsym = lut.element_sym_from_Z(el)
                     raise KeyError("Element {} (Z={}) not found in basis {} version {}".format(
                         elsym, el, name, version))
@@ -226,7 +229,7 @@ def get_basis(name,
         needs_pruning = True
 
     if make_general:
-        basis_dict = manip.make_general(basis_dict, False)
+        basis_dict = manip.make_general(basis_dict, False, False)
         needs_pruning = True
 
     # Remove dead and duplicate shells
@@ -242,7 +245,7 @@ def get_basis(name,
     else:
         header_str = None
 
-    return converters.convert_basis(basis_dict, fmt, header_str)
+    return writers.write_formatted_basis_str(basis_dict, fmt, header_str)
 
 
 def lookup_basis_by_role(primary_basis, role, data_dir=None):
@@ -256,14 +259,17 @@ def lookup_basis_by_role(primary_basis, role, data_dir=None):
     role: str
         Desired role/type of auxiliary basis set.
         Use :func:`bse.api.get_roles` to programmatically obtain the available
-        formats.  The `fmt` argument is not case sensitive.
+        roles.  The `role` argument is not case sensitive.
 
         Available roles are
 
             * jfit
             * jkfit
             * rifit
+            * optri
             * admmfit
+            * dftxfit
+            * dftjfit
 
     data_dir : str
         Data directory with all the basis set information. By default,
@@ -280,13 +286,13 @@ def lookup_basis_by_role(primary_basis, role, data_dir=None):
 
     role = role.lower()
 
-    if not role in get_roles():
+    if role not in get_roles():
         raise RuntimeError("Role {} is not a valid role".format(role))
 
     bs_data = _get_basis_metadata(primary_basis, data_dir)
     auxdata = bs_data['auxiliaries']
 
-    if not role in auxdata:
+    if role not in auxdata:
         raise RuntimeError("Role {} doesn't exist for {}".format(role, primary_basis))
 
     return auxdata[role]
@@ -343,7 +349,9 @@ def get_all_basis_names(data_dir=None):
         it is in the 'data' subdirectory of this project.
     '''
 
-    return sorted(list(get_metadata(data_dir).keys()))
+    md = get_metadata(data_dir)
+    names = list(v['display_name'] for v in md.values())
+    return sorted(names)
 
 
 def get_references(basis_name, elements=None, version=None, fmt=None, data_dir=None):
@@ -452,12 +460,12 @@ def filter_basis_sets(substr=None, family=None, role=None, elements=None, data_d
 
     if family is not None:
         family = family.lower()
-        if not family in get_families(data_dir):
+        if family not in get_families(data_dir):
             raise RuntimeError("Family '{}' is not a valid family".format(family))
         metadata = {k: v for k, v in metadata.items() if v['family'] == family}
     if role is not None:
         role = role.lower()
-        if not role in get_roles():
+        if role not in get_roles():
             raise RuntimeError("Role '{}' is not a valid role".format(role))
         metadata = {k: v for k, v in metadata.items() if v['role'] == role}
     if elements is not None:
@@ -469,7 +477,7 @@ def filter_basis_sets(substr=None, family=None, role=None, elements=None, data_d
             basis_data['versions'] = {k: v for k, v in ver_data.items() if elements <= set(v['elements'])}
 
         # There will be basis sets with no versions. So clean that up
-        metadata = {k: v for k, v in metadata.items() if len(v['versions']) > 0}
+        metadata = {k: v for k, v in metadata.items() if v['versions']}
     if substr:
         substr = substr.lower()
         metadata = {k: v for k, v in metadata.items() if substr in k or substr in v['display_name']}
@@ -484,7 +492,7 @@ def _family_notes_path(family, data_dir):
     data_dir = fix_data_dir(data_dir)
 
     family = family.lower()
-    if not family in get_families(data_dir):
+    if family not in get_families(data_dir):
         raise RuntimeError("Family '{}' does not exist".format(family))
 
     file_name = 'NOTES.' + family.lower()
@@ -561,22 +569,6 @@ def has_basis_notes(family, data_dir=None):
     return os.path.isfile(file_path)
 
 
-def get_schema(schema_type):
-    '''Get a schema that can validate BSE JSON files
-
-       The schema_type represents the type of BSE JSON file to be validated,
-       and can be 'component', 'element', 'table', 'metadata', or 'references'.
-    '''
-
-    schema_file = "{}-schema.json".format(schema_type)
-    file_path = os.path.join(_default_schema_dir, schema_file)
-
-    if not os.path.isfile(file_path):
-        raise RuntimeError('Schema file \'{}\' does not exist, is not readable, or is not a file'.format(file_path))
-
-    return fileio.read_schema(file_path)
-
-
 def get_formats(function_types=None):
     '''Return information about the basis set formats available
 
@@ -587,7 +579,13 @@ def get_formats(function_types=None):
     supporting the given function types will be returned.
     '''
 
-    return converters.get_formats(function_types)
+    #####################################################################################
+    # This function is being kept for two reasons. One, for backwards compatibility.
+    # Two, the idea is that this module deals exclusively with obtaining data
+    # from the internal basis set files, and we want to know what format we can
+    # get them in. So it is semantically clear what get_formats means in that context.
+    #####################################################################################
+    return writers.get_writer_formats(function_types)
 
 
 def get_reference_formats():
@@ -596,7 +594,7 @@ def get_reference_formats():
     The returned data is a map of format to display name. The format
     can be passed as the fmt argument to :func:`get_references`
     '''
-    return refconverters.get_formats()
+    return refconverters.get_reference_formats()
 
 
 def get_roles():
@@ -611,6 +609,7 @@ def get_roles():
              'jfit': 'J-fitting',
              'jkfit': 'JK-fitting',
              'rifit': 'RI-fitting',
+             'optri': 'Optimized RI-fitting',
              'admmfit': 'Auxiliary-Density Matrix Method Fitting',
              'dftxfit': 'DFT Exchange Fitting',
              'dftjfit': 'DFT Correlation Fitting'

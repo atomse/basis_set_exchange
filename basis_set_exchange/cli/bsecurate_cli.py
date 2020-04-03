@@ -31,10 +31,6 @@ def run_bsecurate_cli():
     ########################################
     # Listing of general info and metadata
     ########################################
-    # get-reader-formats
-    subp = subparsers.add_parser('get-reader-formats', help='A list of file formats that can be read')
-    subp.add_argument('-n', '--no-description', action='store_true', help='Print only the format names')
-
     # elements-in-files
     subp = subparsers.add_parser('elements-in-files', help='For a list of JSON files, output what elements are in each file')
     subp.add_argument('files', nargs='+', help='List of files to inspect')
@@ -43,14 +39,12 @@ def run_bsecurate_cli():
     subp = subparsers.add_parser('component-file-refs', help='For a list of component JSON files, output what elements/references are in each file')
     subp.add_argument('files', nargs='+', help='List of files to inspect')
 
-
     ########################################
     # Printing data
     ########################################
     subp = subparsers.add_parser('print-component-file', help='(Pretty) print the contents of a component file')
     subp.add_argument('file', help='File to print')
     subp.add_argument('--elements', help='Which elements of the basis set to output. Default is all defined in the given basis')
-
 
     ########################################
     # Manipulating basis set data
@@ -59,7 +53,6 @@ def run_bsecurate_cli():
     subp = subparsers.add_parser('make-diff', help='Find/Store the differences between two groups of files')
     subp.add_argument('-l', '--left', nargs='+', required=True, help='Base JSON files')
     subp.add_argument('-r', '--right', nargs='+', required=True, help='JSON files with data to subtract from the base files')
-
 
     ########################################
     # Comparing
@@ -80,7 +73,6 @@ def run_bsecurate_cli():
     subp.add_argument('--readfmt2', help='Override the file format of file 2').completer = cli_readerfmt_completer
     subp.add_argument('--uncontract-general', action='store_true', help='Remove general contractions before comparing')
 
-
     ########################################
     # Making graphs
     ########################################
@@ -95,7 +87,6 @@ def run_bsecurate_cli():
     subp.add_argument('outfile', help='Output DOT file to create')
     subp.add_argument('--render', action='store_true', help='Render the DOT file into a corresponding png file')
     subp.add_argument('--version', help='Which version of the basis set to inspect. Default is the latest version')
-
 
     #############################
     # DONE WITH SUBCOMMANDS
@@ -116,7 +107,8 @@ def run_bsecurate_cli():
     if args.output:
         with open(args.output, 'w', encoding='utf-8') as outfile:
             outfile.write(output)
-    else:
+    elif output:
+        # Don't print if output is empty
         print(output)
 
     return 0

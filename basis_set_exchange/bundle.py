@@ -8,7 +8,7 @@ import zipfile
 import tarfile
 import io
 import datetime
-from . import api, converters, refconverters, misc
+from . import api, writers, refconverters, misc
 
 _readme_str = '''Basis set exchange: Basis set bundle
 ==========================================
@@ -19,7 +19,7 @@ Format: {fmt}
 Reference format: {reffmt}
 
 This directory contains all the basis sets in the library
-in {fmt} format. 
+in {fmt} format.
 
 Filenames of the basis sets are in the format
 {{name}}.{{version}}.{{extension}} where the version represents
@@ -32,7 +32,7 @@ Basis set notes have a .notes extension, and family
 notes have a .family_notes extension.
 
 -------------------------------------------------
-https://wwww.basissetexchange.org
+https://www.basissetexchange.org
 https://github.com/MolSSI-BSE/basis_set_exchange
 bse@molssi.org
 -------------------------------------------------
@@ -102,7 +102,7 @@ def _bundle_tbz(outfile, fmt, reffmt, data_dir):
 
 
 def _bundle_zip(outfile, fmt, reffmt, data_dir):
-    with zipfile.ZipFile(outfile, 'w') as zf:
+    with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as zf:
         _bundle_generic(zf, _add_to_zip, fmt, reffmt, data_dir)
 
 
@@ -128,7 +128,7 @@ def _bundle_generic(bfile, addhelper, fmt, reffmt, data_dir):
     None
     '''
 
-    ext = converters.get_format_extension(fmt)
+    ext = writers.get_format_extension(fmt)
     refext = refconverters.get_format_extension(reffmt)
     subdir = 'basis_set_bundle-' + fmt + '-' + reffmt
 
@@ -145,14 +145,14 @@ def _bundle_generic(bfile, addhelper, fmt, reffmt, data_dir):
             addhelper(bfile, basis_filepath, bsdata)
             addhelper(bfile, ref_filename, refdata)
 
-        if len(notes) > 0:
+        if notes:
             notes_filename = os.path.join(subdir, filename + '.notes')
             addhelper(bfile, notes_filename, notes)
 
     for fam in api.get_families(data_dir):
         fam_notes = api.get_family_notes(fam, data_dir)
 
-        if len(fam_notes) > 0:
+        if fam_notes:
             fam_notes_filename = os.path.join(subdir, fam + '.family_notes')
             addhelper(bfile, fam_notes_filename, fam_notes)
 
@@ -208,7 +208,7 @@ def create_bundle(outfile, fmt, reffmt, archive_type=None, data_dir=None):
 
     else:
         archive_type = archive_type.lower()
-        if not archive_type in _bundle_types:
+        if archive_type not in _bundle_types:
             raise RuntimeError("Archive type '{}' is not valid.")
 
     _bundle_types[archive_type]['handler'](outfile, fmt, reffmt, data_dir)

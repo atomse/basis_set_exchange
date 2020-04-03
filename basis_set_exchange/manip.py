@@ -6,6 +6,7 @@ data, as well as some other small functions.
 """
 
 import copy
+from . import lut, skel, misc
 
 
 def merge_element_data(dest, sources, use_copy=True):
@@ -44,8 +45,7 @@ def merge_element_data(dest, sources, use_copy=True):
             if 'references' not in ret:
                 ret['references'] = []
             for ref in s['references']:
-                if not ref in ret['references']:
-                    ret['references'].append(ref)
+                ret['references'].append(ref)
 
     return ret
 
@@ -101,7 +101,7 @@ def prune_shell(shell, use_copy=True):
             if len(nonzero) > 1:
                 raise RuntimeError("Exponent {} is duplicated within a contraction".format(ex[0]))
 
-            if len(nonzero) == 0:
+            if not nonzero:
                 new_coeff_row.append(g[0])
             else:
                 new_coeff_row.append(nonzero[0])
@@ -136,7 +136,7 @@ def prune_basis(basis, use_copy=True):
         basis = copy.deepcopy(basis)
 
     for k, el in basis['elements'].items():
-        if not 'electron_shells' in el:
+        if 'electron_shells' not in el:
             continue
 
         shells = el.pop('electron_shells')
@@ -173,7 +173,7 @@ def uncontract_spdf(basis, max_am=0, use_copy=True):
 
     for k, el in basis['elements'].items():
 
-        if not 'electron_shells' in el:
+        if 'electron_shells' not in el:
             continue
         newshells = []
 
@@ -226,7 +226,7 @@ def uncontract_general(basis, use_copy=True):
 
     for k, el in basis['elements'].items():
 
-        if not 'electron_shells' in el:
+        if 'electron_shells' not in el:
             continue
 
         newshells = []
@@ -270,7 +270,7 @@ def uncontract_segmented(basis, use_copy=True):
 
     for k, el in basis['elements'].items():
 
-        if not 'electron_shells' in el:
+        if 'electron_shells' not in el:
             continue
 
         newshells = []
@@ -282,7 +282,7 @@ def uncontract_segmented(basis, use_copy=True):
             for i in range(len(exponents)):
                 newsh = sh.copy()
                 newsh['exponents'] = [exponents[i]]
-                newsh['coefficients'] = [["1.00000000"] * nam]
+                newsh['coefficients'] = [["1.00000000E+00"] * nam]
 
                 # Remember to transpose the coefficients
                 newsh['coefficients'] = list(map(list, zip(*newsh['coefficients'])))
@@ -294,7 +294,7 @@ def uncontract_segmented(basis, use_copy=True):
     return basis
 
 
-def make_general(basis, use_copy=True):
+def make_general(basis, skip_spdf=False, use_copy=True):
     """
     Makes one large general contraction for each angular momentum
 
@@ -306,21 +306,33 @@ def make_general(basis, use_copy=True):
 
     zero = '0.00000000'
 
-    basis = uncontract_spdf(basis, 0, use_copy)
+    if use_copy:
+        basis = copy.deepcopy(basis)
+
+    if not skip_spdf:
+        basis = uncontract_spdf(basis, 0, False)
 
     for k, el in basis['elements'].items():
-        if not 'electron_shells' in el:
+        if 'electron_shells' not in el:
             continue
+
+        newshells = []
 
         # See what we have
         all_am = []
         for sh in el['electron_shells']:
-            if not sh['angular_momentum'] in all_am:
-                all_am.append(sh['angular_momentum'])
+            am = sh['angular_momentum']
+
+            # Skip sp shells
+            if len(am) > 1:
+                newshells.append(sh)
+                continue
+
+            if am not in all_am:
+                all_am.append(am)
 
         all_am = sorted(all_am)
 
-        newshells = []
         for am in all_am:
             newsh = {
                 'angular_momentum': am,
@@ -332,9 +344,8 @@ def make_general(basis, use_copy=True):
 
             # Do exponents first
             for sh in el['electron_shells']:
-                if sh['angular_momentum'] != am:
-                    continue
-                newsh['exponents'].extend(sh['exponents'])
+                if sh['angular_momentum'] == am:
+                    newsh['exponents'].extend(sh['exponents'])
 
             # Number of primitives in the new shell
             nprim = len(newsh['exponents'])
@@ -377,64 +388,6 @@ def _is_single_column(col):
     return sum(float(x) != 0.0 for x in col) == 1
 
 
-def _is_zero_column(col):
-    return sum(float(x) != 0.0 for x in col) == 0
-
-
-def _nonzero_range(vec):
-    for idx, x in enumerate(vec):
-        if float(x) != 0.0:
-            first = idx
-            break
-
-    for idx, x in enumerate(reversed(vec)):
-        if float(x) != 0.0:
-            last = (len(vec) - idx)
-            break
-
-    if first is None:
-        return (None, None)
-    else:
-        return (first, last)
-
-
-def _find_block(mat):
-
-    # Initial range of rows
-    row_range = _nonzero_range(mat[0])
-    rows = range(row_range[0], row_range[1])
-
-    # Find the right-most column with a nonzero in it
-    col_range = (0, 0)
-    for r in rows:
-        x, y = _nonzero_range([col[r] for col in mat])
-        col_range = (min(col_range[0], x), max(col_range[1], y))
-
-    cols = range(col_range[0], col_range[1])
-
-    # Columns may be jagged also
-    # Iterate until we don't see any change
-    while True:
-        row_range_old = row_range
-        col_range_old = col_range
-        for c in cols:
-            x, y = _nonzero_range(mat[c])
-            row_range = (min(row_range[0], x), max(row_range[1], y))
-
-        rows = range(row_range[0], row_range[1])
-
-        for r in rows:
-            x, y = _nonzero_range([col[r] for col in mat])
-            col_range = (min(col_range[0], x), max(col_range[1], y))
-
-        cols = range(col_range[0], col_range[1])
-
-        if col_range == col_range_old and row_range == row_range_old:
-            break
-
-    return (rows, cols)
-
-
 def optimize_general(basis, use_copy=True):
     """
     Optimizes the general contraction using the method of Hashimoto et al
@@ -449,21 +402,23 @@ def optimize_general(basis, use_copy=True):
     if use_copy:
         basis = copy.deepcopy(basis)
 
-    for k, el in basis['elements'].items():
+    # Make as generally-contracted as possible first
+    basis = make_general(basis, skip_spdf=True, use_copy=False)
 
-        if not 'electron_shells' in el:
+    for eldata in basis['elements'].values():
+
+        if not 'electron_shells' in eldata:
             continue
 
-        elshells = el.pop('electron_shells')
-        el['electron_shells'] = []
+        elshells = eldata['electron_shells']
         for sh in elshells:
             exponents = sh['exponents']
             coefficients = sh['coefficients']
             nprim = len(exponents)
             nam = len(sh['angular_momentum'])
 
+            # Skip sp shells and shells with only one general contraction
             if nam > 1 or len(coefficients) < 2:
-                el['electron_shells'].append(sh)
                 continue
 
             # First, find columns (general contractions) with a single non-zero value
@@ -471,53 +426,261 @@ def optimize_general(basis, use_copy=True):
 
             # Find the corresponding rows that have a value in one of these columns
             # Note that at this stage, the row may have coefficients in more than one
-            # column. That is ok, we are going to split it off anyway
-            single_rows = []
+            # column. That is what we are looking for
+
+            # Also, test to see that each row is only represented once. That is, there should be
+            # no rows that are part of single columns (this would represent duplicate shells).
+            # This can happen in poorly-formatted basis sets and is an error
+            row_col_pairs = []
+            all_row_idx = []
             for col_idx in single_columns:
                 col = coefficients[col_idx]
                 for row_idx in range(nprim):
                     if float(col[row_idx]) != 0.0:
-                        single_rows.append(row_idx)
+                        if row_idx in all_row_idx:
+                            raise RuntimeError("Badly-formatted basis. Row {} makes duplicate shells".format(row_idx))
 
-            # Split those out into new shells, and remove them from the
-            # original shell
-            new_shells_single = []
-            for row_idx in single_rows:
-                newsh = copy.deepcopy(sh)
-                newsh['exponents'] = [exponents[row_idx]]
-                newsh['coefficients'] = [['1.00000000000']]
-                new_shells_single.append(newsh)
+                        # Store the index of the nonzero value in single_columns
+                        row_col_pairs.append((row_idx, col_idx))
+                        all_row_idx.append(row_idx)
 
-            exponents = [x for idx, x in enumerate(exponents) if idx not in single_rows]
-            coefficients = [x for idx, x in enumerate(coefficients) if idx not in single_columns]
-            coefficients = [[x for idx, x in enumerate(col) if not idx in single_rows] for col in coefficients]
+            # Now for each row/col pair, zero out the entire row
+            # EXCEPT for the column that has the single value
+            for row_idx, col_idx in row_col_pairs:
+                for idx, col in enumerate(coefficients):
+                    if float(col[row_idx]) != 0.0 and col_idx != idx:
+                        col[row_idx] = '0.0000000E+00'
 
-            # Remove Zero columns
-            #coefficients = [ x for x in coefficients if not _is_zero_column(x) ]
+    return basis
 
-            # Find contiguous rectanglar blocks
-            new_shells = []
-            while len(exponents) > 0:
-                block_rows, block_cols = _find_block(coefficients)
 
-                # add as a new shell
-                newsh = copy.deepcopy(sh)
-                newsh['exponents'] = [exponents[i] for i in block_rows]
-                newsh['coefficients'] = [[coefficients[colidx][i] for i in block_rows] for colidx in block_cols]
-                new_shells.append(newsh)
+def extend_dunning_aug(basis, level, use_copy=True, as_component=False):
+    '''
+    Extends the augmenting functions of a dunning basis set (aug -> daug,taug,...)
 
-                # Remove from the original exponent/coefficient set
-                exponents = [x for idx, x in enumerate(exponents) if idx not in block_rows]
-                coefficients = [x for idx, x in enumerate(coefficients) if idx not in block_cols]
-                coefficients = [[x for idx, x in enumerate(col) if not idx in block_rows] for col in coefficients]
+    Parameters
+    ----------
+    basis : dict
+        Basis set dictionary to work with
+    level: int
+        Level to create (must be >1). 2 = daug, 3 = taug, etc
+    use_copy: bool
+        If True, the input basis set is not modified.
+    '''
 
-            # I do this order to mimic the output of the original BSE
-            el['electron_shells'].extend(new_shells)
-            el['electron_shells'].extend(new_shells_single)
+    if level < 2:
+        raise RuntimeError("Level = {} is invalid for dunning_extend_aug".format(level))
 
-        # Fix coefficients for completely uncontracted shells to 1.0
-        for sh in el['electron_shells']:
-            if len(sh['coefficients']) == 1 and len(sh['coefficients'][0]) == 1:
-                sh['coefficients'][0][0] = '1.0000000'
+    # We need to combine shells by AM
+    # I guess we don't NEED to, but it makes things a lot easier
+    basis_copy = make_general(basis, use_copy=True)
 
+    # We will now store the new shells in 'basis'
+    # If as_component is specified, then create a new empty component basis
+    if as_component:
+        basis = skel.create_skel('component')
+        basis['elements'] = {k: {} for k, v in basis_copy['elements'].items() if 'electron_shells' in v}
+    elif use_copy:
+        basis = copy.deepcopy(basis)
+
+    # From Woon & Dunning, Jr
+    # J. Chem. Phys. v100, No. 4, p. 2975 (1994)
+    # DOI: 10.1063/1.466439
+    #
+    # The exponent for d-aug-cc-pVXZ: alpha*beta
+    #                  t-aug-cc-pVXZ: alpha*(beta**2)
+    # and so on.
+    #
+    # alpha = smallest exponent in aug-cc-pVXZ
+    # beta = ratio of two most diffuse functions (beta < 1)
+    #
+    # This applies to all angular momentum (which have been combined into
+    # shells already)
+
+    for el_z, eldata in basis_copy['elements'].items():
+        if 'electron_shells' not in eldata:
+            continue
+
+        el_sym = lut.element_sym_from_Z(el_z)
+
+        new_shells = []
+
+        for shell in eldata['electron_shells']:
+            # Find the two smallest exponents. The smallest is alpha
+            # beta is the ratio alpha/(next smallest)
+            # Keep track of the indices as well
+            exponents = [(float(x), idx) for idx, x in enumerate(shell['exponents'])]
+            sorted_exponents = sorted(exponents)
+
+            if len(sorted_exponents) < 2:
+                raise RuntimeError(
+                    "Need more than two exponents to extend dunning augmentation. Element {} has {}: ".format(
+                        el_sym, ','.join(shell['exponents'])))
+
+            alpha, alpha_idx = sorted_exponents[0]
+            beta_tmp, _ = sorted_exponents[1]
+            beta = alpha / beta_tmp
+
+            if alpha == beta_tmp:
+                raise RuntimeError(
+                    "Two smallest exponents are the same. Duplicate exponents are not a good thing here. Exponent: {}".
+                    format(alpha))
+
+            # Test that the primitive for alpha is completely uncontracted
+            alpha_coefs = [float(c[alpha_idx]) for c in shell['coefficients']]
+            n_coefs = len(alpha_coefs)
+            if alpha_coefs.count(0.0) != n_coefs - 1 or alpha_coefs.count(1.0) != 1:
+                raise RuntimeError("Smallest exponent is not completely uncontracted. Exponent: {}".format(alpha))
+
+            new_exponents = []
+            for i in range(1, level):
+                new_exponents.append(alpha * (beta**i))
+
+            new_exponents = ['{:.3e}'.format(x) for x in new_exponents]
+
+            # add the new exponents as new uncontracted shells
+            for ex in new_exponents:
+                new_shells.append({
+                    'function_type': shell['function_type'],
+                    'region': shell['region'],
+                    'angular_momentum': shell['angular_momentum'],
+                    'exponents': [ex],
+                    'coefficients': [['1.00000000']]
+                })
+
+        # add the shells to the original basis set
+        # (if this is a component basis, then 'electron_shells' may not exist)
+        if 'electron_shells' not in basis['elements'][el_z]:
+            basis['elements'][el_z]['electron_shells'] = []
+
+        basis['elements'][el_z]['electron_shells'].extend(new_shells)
+
+    return basis
+
+
+def remove_primitive(electron_shell, idx_to_remove):
+    '''Removes a primitive (by index) of a electron_shell
+
+    The electron_shell passed in is modified
+    '''
+
+    electron_shell['exponents'].pop(idx_to_remove)
+    for c in electron_shell['coefficients']:
+        c.pop(idx_to_remove)
+
+    # We may have removed the only primitive of a general contraction
+    # So remove general contractions if all coefficients are zero
+    electron_shell['coefficients'] = [
+        gen for gen in electron_shell['coefficients'] if any([float(c) != 0.0 for c in gen])
+    ]
+
+
+def _element_remove_diffuse(eldata, nremove):
+    if 'electron_shells' not in eldata:
+        pass
+
+    shells = eldata['electron_shells']
+    max_am = misc.max_am(shells)
+    if nremove == 'all':
+        nremove = max_am + 1
+
+    am_toremove = list(range(max_am, max_am - nremove, -1))
+
+    # We may be asked to remove more than we have. That is ok
+    am_toremove = [x for x in am_toremove if x >= 0]
+
+    for shell in shells:
+        shell_am = shell['angular_momentum']
+
+        if len(shell_am) > 1:
+            raise RuntimeError("Cannot not remove diffuse functions from fused shell: {}".format(shell_am))
+
+        shell_am = shell_am[0]
+        if shell_am not in am_toremove:
+            continue
+
+        # Find the most diffuse function and remove it
+        exponents = [(float(x), idx) for idx, x in enumerate(shell['exponents'])]
+        sorted_exponents = sorted(exponents)
+        diffuse_exponent, diffuse_idx = sorted_exponents[0]
+
+        remove_primitive(shell, diffuse_idx)
+
+
+def truhlar_calendarize(basis, month, use_copy=True):
+    '''Create the truhlar "month" basis sets from the corresponding aug basis set
+
+    In Papajak 2011, removal of diffuse function stopped before removal of s and p functions.
+    This, conceivably, extends to d functions for transition metals.
+    However, you can keep extending to further in the year by removing these functions,
+    although it may affect stability. This is implemented in Gaussian with the t(month)
+    basis sets - tjul, tjun, etc. The 'tmonth' and regular 'month' basis sets are equivalent
+    until the 'maug' basis set is reached (containg no diffuse functions on H,He, s,p,d on transition
+    metals, and s, p on other elements).
+
+    Since the regular 'month' basis sets are equivalent until maug, we do not adopt the
+    t(month) nomenclature. Instead, you can just go further backwards through the months
+    until you run out of diffuse functions or run out of months.
+
+    Parameters
+    ----------
+    basis : dict
+        Basis set dictionary to work with
+    month: str
+        Month to create ('apr', 'jul', etc). Not case sensitive
+    use_copy: bool
+        If True, the input basis set is not modified.
+    '''
+
+    valid_months = ['jul', 'jun', 'may', 'apr', 'mar', 'feb', 'jan']
+    month = month.lower()
+    if month not in valid_months:
+        raise RuntimeError("Month {} is not valid for truhlar calendarization")
+
+    # We need to combine shells by AM
+    # I guess we don't NEED to, but it makes things a lot easier
+    basis = make_general(basis, use_copy=use_copy)
+
+    # Find out he max am for the entire basis
+    all_am = [misc.max_am(x['electron_shells']) for x in basis['elements'].values()]
+    basis_max_am = max(all_am)
+
+    # Figure out what to remove
+    # We do this by finding the offset from jul
+    # The index represents the offset, since index('jul') = 0
+    # This offset represents how many diffuse functions to remove from each element
+    month_offset = valid_months.index(month)
+
+    # Are we removing all diffuse functions from all elements?
+    # If so, we will end up with all elements corresponding to the cc-pVXZ basis.
+    # While it is ok for some elements to end up that way, we don't want the entire
+    # basis set to be like that
+    # Note that for a given basis_max_am, there will be (basis_max_am+1) diffuse functions
+    if month_offset > basis_max_am:  # or month_offset >= (basis_max_am+1)
+        raise RuntimeError("Will not remove {} diffuse functions for basis with max am = {}".format(
+            month_offset, basis_max_am))
+
+    # jul = same as aug, except remove all diffuse from H,He
+    # First, remove diffuse functions from H,He
+    # This will always be true - we don't handle 'aug'
+    for el_z in ['1', '2']:
+        if el_z not in basis['elements']:
+            continue
+
+        eldata = basis['elements'][el_z]
+        _element_remove_diffuse(eldata, 'all')
+
+    # short circuit if we are doing jul
+    if month_offset == 0:
+        basis = prune_basis(basis, False)
+        return basis
+
+    # Now the rest
+    for el_z, eldata in basis['elements'].items():
+        if el_z == '1' or el_z == '2':
+            continue
+
+        _element_remove_diffuse(eldata, month_offset)
+
+    basis = prune_basis(basis, False)
     return basis

@@ -9,7 +9,7 @@ from .bse_handlers import bse_cli_handle_subcmd
 from .check import cli_check_normalize_args
 from .complete import (cli_case_insensitive_validator,
                        cli_family_completer, cli_role_completer, cli_bsname_completer,
-                       cli_fmt_completer, cli_reffmt_completer)
+                       cli_write_fmt_completer, cli_read_fmt_completer, cli_reffmt_completer)
 
 
 def run_bse_cli():
@@ -34,7 +34,15 @@ def run_bse_cli():
     # Listing of data-independent info
     ########################################
     # list-formats subcommand
-    subp = subparsers.add_parser('list-formats', help='Output a list all available basis set formats and descriptions')
+    subp = subparsers.add_parser('list-formats', help='Output a list of basis set formats that can be used with obtaining a basis set')
+    subp.add_argument('-n', '--no-description', action='store_true', help='Print only the format names')
+
+    # list-writer-formats subcommand
+    subp = subparsers.add_parser('list-writer-formats', help='Output a list available basis set formats that can be written')
+    subp.add_argument('-n', '--no-description', action='store_true', help='Print only the format names')
+
+    # list-reader-formats
+    subp = subparsers.add_parser('list-reader-formats', help='Output a list of basis set formats that can be read')
     subp.add_argument('-n', '--no-description', action='store_true', help='Print only the format names')
 
     # list-ref-formats subcommand
@@ -73,7 +81,7 @@ def run_bse_cli():
     # get-basis subcommand
     subp = subparsers.add_parser('get-basis', help='Output a formatted basis set')
     subp.add_argument('basis', help='Name of the basis set to output').completer = cli_bsname_completer
-    subp.add_argument('fmt', help='Which format to output the basis set as').completer = cli_fmt_completer
+    subp.add_argument('fmt', help='Which format to output the basis set as').completer = cli_write_fmt_completer
     subp.add_argument('--elements', help='Which elements of the basis set to output. Default is all defined in the given basis')
     subp.add_argument('--version', help='Which version of the basis set to output. Default is the latest version')
     subp.add_argument('--noheader', action='store_true', help='Do not output the header at the top')
@@ -112,14 +120,22 @@ def run_bse_cli():
     subp.add_argument('family', type=str.lower, help='The basis set family to the get the notes of').completer = cli_family_completer
 
     #################################
+    # Converting basis sets
+    #################################
+    subp = subparsers.add_parser('convert-basis', help='Convert basis set files from one format to another')
+    subp.add_argument('input_file', type=str, help='Basis set file to convert')
+    subp.add_argument('output_file', type=str, help='Converted basis set file')
+    subp.add_argument('--in-fmt', type=str, default=None, help='Input format (default: autodetected from input filename').completer = cli_read_fmt_completer
+    subp.add_argument('--out-fmt', type=str, default=None, help='Output format (default: autodetected from output filename').completer = cli_write_fmt_completer
+
+    #################################
     # Creating bundles
     #################################
     subp = subparsers.add_parser('create-bundle', help='Create a bundle of basis sets')
-    subp.add_argument('fmt', help='Which format to output the basis set as').completer = cli_fmt_completer
+    subp.add_argument('fmt', help='Which format to output the basis set as').completer = cli_write_fmt_completer
     subp.add_argument('reffmt', help='Which format to output the references as').completer = cli_reffmt_completer
     subp.add_argument('bundle_file', help='Bundle/Archive file to create')
     subp.add_argument('--archive-type', help='Override the type of archive to create (zip or tbz)')
-
 
     #############################
     # DONE WITH SUBCOMMANDS

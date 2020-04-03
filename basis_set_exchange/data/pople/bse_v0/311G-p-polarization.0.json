@@ -29,7 +29,9 @@
       ]
     },
     "2": {
-      "references": [],
+      "references": [
+        "krishnan1980a"
+      ],
       "electron_shells": [
         {
           "function_type": "gto",

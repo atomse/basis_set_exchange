@@ -7,6 +7,8 @@ Developer Documentation
 
    developer_faq
    developer_api
+   developer_writers
+   developer_readers
+   developer_refconverters
    developer_curate
-   developer_converters
 

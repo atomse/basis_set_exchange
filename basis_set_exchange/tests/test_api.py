@@ -22,13 +22,11 @@ role_tests = [('cc-pvdz', 'rifit', 'cc-pvdz-rifit'),
 # yapf: enable
 
 
-@pytest.mark.parametrize('basis_name', bs_names)
-def test_get_basis_1(basis_name):
+@pytest.mark.parametrize('basis_name, basis_ver', bs_names_vers)
+def test_get_basis_1(basis_name, basis_ver):
     """For all versions of basis sets, test a simple get_basis
     """
-    this_metadata = bs_metadata[basis_name]
-    for ver in this_metadata['versions'].keys():
-        bse.get_basis(basis_name, version=ver)
+    bse.get_basis(basis_name, version=basis_ver)
 
 
 @pytest.mark.parametrize('basis_name', bs_names)
@@ -72,7 +70,7 @@ def test_get_basis_3(basis_name, bool_opts):
 
 
 @pytest.mark.parametrize('basis_name', bs_names_sample)
-@pytest.mark.parametrize('fmt', bs_formats)
+@pytest.mark.parametrize('fmt', bs_write_formats)
 def test_get_basis_4(basis_name, fmt):
     """For a sample of basis sets, test getting different formats
        of the latest version
@@ -152,7 +150,7 @@ def test_filter_0(substr, family, role):
 
 # yapf: disable
 @pytest.mark.parametrize('fmts', [None,
-                                  ['spherical_gto', 'scalar_ecp'],
+                                  ['gto_spherical', 'scalar_ecp'],
                                   ['CARTESIAN_gto']])
 # yapf: enable
 def test_get_formats(fmts):
@@ -161,3 +159,8 @@ def test_get_formats(fmts):
 
     # JSON is always supported
     assert len(ret) > 1
+
+
+def test_get_reader_formats():
+    '''Test the get_reader_formats function'''
+    bse.get_reference_formats()

@@ -71,6 +71,7 @@ def create_metadata_file(output_path, data_dir):
             # yapf: disable
             version_info[ver] = { 'file_relpath': table_file,
                                   'revdesc': bs['revision_description'],
+                                  'revdate': bs['revision_date'],
                                   'elements': defined_elements
                                 }
             # yapf: enable
@@ -87,11 +88,12 @@ def create_metadata_file(output_path, data_dir):
                       'other_names': None,
                       'description': bs['description'],
                       'latest_version': latest_ver,
+                      'tags': bs['tags'],
                       'basename': base_filename[:-1], # Strip off that trailing period
                       'relpath': base_relpath,
                       'family': bs['family'],
                       'role': bs['role'],
-                      'functiontypes': function_types,
+                      'function_types': function_types,
                       'auxiliaries': bs['auxiliaries'],
                       'versions': version_info }
         # yapf: enable

@@ -29,17 +29,17 @@ def sort_basis_dict(bs):
         'molssi_bse_schema', 'schema_type', 'schema_version',
 
         # Auxiliary block
-         'jkfit', 'jfit', 'rifit', 'admmfit', 'dftxfit', 'dftjfit',
+        'jkfit', 'jfit', 'rifit', 'optri', 'admmfit', 'dftxfit', 'dftjfit',
 
         # Basis set metadata
-        'name', 'names', 'aliases', 'flags', 'family', 'description', 'role', 'auxiliaries',
+        'name', 'names', 'aliases', 'tags', 'family', 'description', 'role', 'auxiliaries',
         'notes', 'function_types',
 
         # Reference stuff
         'reference_description', 'reference_keys',
 
         # Version metadata
-        'version', 'revision_description',
+        'version', 'revision_description', 'revision_date',
 
         # Sources of components
         'data_source',
@@ -88,8 +88,17 @@ def sort_shell(shell, use_copy=True):
     if use_copy:
         shell = copy.deepcopy(shell)
 
+    tmp_c = shell['coefficients']
+
+    # Sort columns by number of non-zero entries
+    # But don't sort columns for SP shells
+    if len(shell['angular_momentum']) == 1:
+        col_counts = [sum([1 for x in y if float(x) != 0.0]) for y in tmp_c]
+        tmp_c = sorted(zip(col_counts, tmp_c), key=lambda x: x[0], reverse=True)
+        tmp_c = list(zip(*tmp_c))[1]
+
     # Transpose of coefficients
-    tmp_c = list(map(list, zip(*shell['coefficients'])))
+    tmp_c = list(map(list, zip(*tmp_c)))
 
     # For each primitive, find the index of the first nonzero coefficient
     nonzero_idx = [next((i for i, x in enumerate(c) if float(x) != 0.0), None) for c in tmp_c]
@@ -107,13 +116,7 @@ def sort_shell(shell, use_copy=True):
     tmp_c = [x[1] for x in tmp]
     shell['exponents'] = [x[0] for x in tmp]
 
-    # Now sort the columns of the coefficient by index of first nonzero coefficient
     tmp_c = list(map(list, zip(*tmp_c)))
-    nonzero_idx = [next((i for i, x in enumerate(c) if float(x) != 0.0), None) for c in tmp_c]
-
-    tmp = zip(tmp_c, nonzero_idx)
-    tmp = sorted(tmp, key=lambda x: int(x[1]))
-    tmp_c = [x[0] for x in tmp]
 
     shell['coefficients'] = tmp_c
 
@@ -140,11 +143,15 @@ def sort_shells(shells, use_copy=True):
     shells = [sort_shell(sh, False) for sh in shells]
 
     # Sort the list by increasing AM, then general contraction level, then decreasing highest exponent
+    # yapf: disable
     return list(
         sorted(
             shells,
-            key=lambda x: (max(x['angular_momentum']), -len(x['exponents']), -len(x['coefficients']), -float(
-                max(x['exponents'])))))
+            key=lambda x: (max(x['angular_momentum']),
+                          -len(x['exponents']),
+                          -len(x['coefficients']),
+                          -max(float(y) for y in x['exponents']))))
+    # yapf: enable
 
 
 def sort_potentials(potentials, use_copy=True):
@@ -198,11 +205,11 @@ def sort_single_reference(ref_entry):
         'schema_type', 'schema_version',
 
         # Type of the entry
-        'type',
+        '_entry_type', 'type',
 
         # Actual publication info
         'authors', 'title', 'booktitle', 'series', 'editors', 'journal',
-        'institution', 'volume', 'number', 'page', 'year', 'note', 'publisher',
+        'institution', 'school', 'volume', 'number', 'page', 'year', 'note', 'publisher',
         'address', 'isbn', 'doi'
     ]
     # yapf: enable
